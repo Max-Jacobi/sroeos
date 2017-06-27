@@ -1,0 +1,16 @@
+Code: SRO EOS
+Type: Fortran 2003/C++ code
+Title: The SRO Finite-Temperature Nuclear Equation of State Code
+Version: 1.0
+Date: 2017-06-027
+Author: Andre da Silva Schneider, Luke F. Roberts, Christian D. Ott
+Maintainer: Andre da Silva Schneider <andschn@caltech.edu>
+Description: This code calculate the equation of state (EOS) of hot
+             dense matter using a liquid-drop model with Skyrme
+             interaction at high densities and a nuclear statistical
+	     equilibrium EOS at low densities.
+License: GPL (>= 3)
+NeedsCompilation: yes
+Packaged: 2017-06-27; andschn
+Repository: bitbucket
+Date/Publication: 2017-06-27
