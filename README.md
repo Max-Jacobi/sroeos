@@ -11,12 +11,13 @@ License: GPLv3 (see file LICENSE)
 
 Documentation: User_Guide/User_Guide.pdf
 
-Quick Start:
+*** Quick Start:
 
 (1) Set up a make.inc file for your machine. Examples are provided,
 use a symbolic link to point to your custom file. See the User Guide
 for compiler and library dependencies. In short, you'll need Fortran,
 C/C++, HDF5, BLAS, and LAPACK.
+
 
 (2) The SRO EOS comes in three parts:
 
@@ -37,6 +38,9 @@ Directory MERGE:
 Code that merges SNA and NSE tables and adds electrons, positrons,
 and photons.
 
+
+(3) There are two more directories:
+
 Directory eleos:
 
 The directory 'eleos' contains a copy of the Timmes EOS,
@@ -53,13 +57,15 @@ extract a dataset containing source code or an input file from an
 HDF5 table.
 
 
-(3) Read the User Guide to understand inputs and outputs of the SNA
+(4) Read the User Guide to understand inputs and outputs of the SNA
 and NSE codes. Make sure to also understand the input requirements
 for the MERGE code. In short, the NSE and SNA tables should have
 higher resolution than the desired output resolution for the final,
 merged table.
 
-(4) Enjoy!
+
+(5) Enjoy!
+
 
 Feel free to contact us with bug reports and questions at
 SROEOS@stellarcollapse.org. Please do note that our resources are
