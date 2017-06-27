@@ -1,0 +1,202 @@
+!    This file is part of SRO_EOS.
+!
+!    SRO_EOS is free software: you can redistribute it and/or modify
+!    it under the terms of the GNU General Public License as published by
+!    the Free Software Foundation, either version 3 of the License, or
+!    (at your option) any later version.
+!
+!    SRO_EOS is distributed in the hope that it will be useful,
+!    but WITHOUT ANY WARRANTY; without even the implied warranty of
+!    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+!    GNU General Public License for more details.
+!
+!    You should have received a copy of the GNU General Public License
+!    along with SRO_EOS.  If not, see <http://www.gnu.org/licenses/>.
+!
+
+!
+!  This file is originally part of the Timmes EOS available at
+!  http://cococubed.asu.edu/code_pages/eos.shtml
+!  Reference: F.X. Timmes & D. Arnett, ApJS 125 277 (1999)
+!
+!  It has been slightly modified by Andre da Silva Schneider
+!   to fit SRO_EOS source code
+!
+
+!c..
+!c..declaration for pipelining the eos routines
+
+!c..maximum length of the row vector
+      integer   nrowmax
+      parameter (nrowmax = 10)
+
+
+!c..maximum number of isotopes
+      integer   irowmax
+      parameter (irowmax = 30)
+
+
+!c..maximum number of ionization stages
+      integer   jstagemax
+      parameter (jstagemax = 30)
+
+
+!c..failure of an eos
+      logical          eosfail
+      common /eosfc1/  eosfail
+!$omp threadprivate(/eosfc1/)
+
+
+!c..lower and upper limits of the loop over rows
+      integer          jlo_eos,jhi_eos
+      common /eosvec2/ jlo_eos,jhi_eos
+!$omp threadprivate(/eosvec2/)
+
+
+
+!c..thermodynamic and composition inputs
+      double precision     &
+                temp_row(nrowmax),den_row(nrowmax), &
+                abar_row(nrowmax),zbar_row(nrowmax), &
+                zeff_row(nrowmax)
+
+      common /thinp/ &
+                temp_row,den_row, &
+                abar_row,zbar_row, &
+                zeff_row
+!$omp threadprivate(/thinp/)
+
+!c..composition input
+      integer          niso
+      double precision xmass_row(irowmax,nrowmax), &
+                       aion_row(irowmax,nrowmax),  &
+                       zion_row(irowmax,nrowmax)
+      common  /cmpinp/ xmass_row,aion_row,zion_row,niso
+!$omp threadprivate (/cmpinp/)
+
+
+!c..composition outout
+      double precision frac_row(jstagemax,irowmax,nrowmax)
+      common /cmpout/  frac_row
+!$omp threadprivate (/cmpout/)
+
+!c..totals and their derivatives
+      double precision &
+                ptot_row(nrowmax),dpt_row(nrowmax),dpd_row(nrowmax), &
+                dpa_row(nrowmax),dpz_row(nrowmax), &
+                etot_row(nrowmax),det_row(nrowmax),ded_row(nrowmax), &
+                dea_row(nrowmax),dez_row(nrowmax), &
+                stot_row(nrowmax),dst_row(nrowmax),dsd_row(nrowmax), &
+                dsa_row(nrowmax),dsz_row(nrowmax)
+      common /thtot/ &
+                ptot_row,dpt_row,dpd_row,dpa_row,dpz_row, &
+                etot_row,det_row,ded_row,dea_row,dez_row, &
+                stot_row,dst_row,dsd_row,dsa_row,dsz_row
+!$omp threadprivate (/thtot/)
+
+!c..radiation contributions
+      double precision &
+                prad_row(nrowmax), &
+                erad_row(nrowmax), &
+                srad_row(nrowmax)
+      common /thrad/ &
+                prad_row, &
+                erad_row, &
+                srad_row
+!$omp threadprivate (/thrad/)
+
+!c..ion contributions
+      double precision &
+                pion_row(nrowmax), &
+                eion_row(nrowmax), &
+                sion_row(nrowmax), &
+                xni_row(nrowmax)
+      common /thion/ &
+                pion_row, &
+                eion_row, &
+                sion_row, &
+                xni_row
+!$omp threadprivate (/thion/)
+
+!c..electron-positron contributions
+      double precision &
+               pele_row(nrowmax),ppos_row(nrowmax), &
+               dpept_row(nrowmax),dpepd_row(nrowmax), &
+               dpepa_row(nrowmax),dpepz_row(nrowmax), &
+               eele_row(nrowmax),epos_row(nrowmax), &
+               deept_row(nrowmax),deepd_row(nrowmax), &
+               deepa_row(nrowmax),deepz_row(nrowmax), &
+               sele_row(nrowmax),spos_row(nrowmax), &
+               dsept_row(nrowmax),dsepd_row(nrowmax), &
+               dsepa_row(nrowmax),dsepz_row(nrowmax), &
+               xnem_row(nrowmax), &
+               xne_row(nrowmax),dxnet_row(nrowmax),dxned_row(nrowmax), &
+               dxnea_row(nrowmax),dxnez_row(nrowmax),xnp_row(nrowmax), &
+               etaele_row(nrowmax),etapos_row(nrowmax), &
+               detat_row(nrowmax),detad_row(nrowmax), &
+               detaa_row(nrowmax),detaz_row(nrowmax)
+      common /thepc/ &
+               pele_row,ppos_row, &
+               dpept_row,dpepd_row, &
+               dpepa_row,dpepz_row, &
+               eele_row,epos_row, &
+               deept_row,deepd_row, &
+               deepa_row,deepz_row, &
+               sele_row,spos_row, &
+               dsept_row,dsepd_row, &
+               dsepa_row,dsepz_row, &
+               xnem_row, &
+               xne_row,dxnet_row,dxned_row, &
+               dxnea_row,dxnez_row,xnp_row, &
+               etaele_row,etapos_row, &
+               detat_row,detad_row, &
+               detaa_row,detaz_row
+!$omp threadprivate(/thepc/)
+
+!c..ionization potential contributions
+      double precision eip_row(nrowmax), &
+                       pip_row(nrowmax), &
+                       sip_row(nrowmax)
+      common /thxip/   eip_row,pip_row,sip_row
+!$omp threadprivate (/thxip/)
+
+!c..coulomb contributions
+      double precision &
+                pcou_row(nrowmax), &
+                ecou_row(nrowmax), &
+                scou_row(nrowmax), &
+                plasg_row(nrowmax)
+      common /thcou/ &
+                pcou_row, &
+                ecou_row, &
+                scou_row, &
+                plasg_row
+!$omp threadprivate (/thcou/)
+
+!c..thermodynamic consistency checks; maxwell relations
+      double precision &
+                dse_row(nrowmax),dpe_row(nrowmax),dsp_row(nrowmax)
+      common /thmax/ &
+                dse_row,dpe_row,dsp_row
+!$omp threadprivate (/thmax/)
+
+!c..derivative based quantities
+      double precision &
+                cp_row(nrowmax),cv_row(nrowmax), &
+                gam1_row(nrowmax),gam2_row(nrowmax),gam3_row(nrowmax), &
+                cs_row(nrowmax)
+      common /thder/ &
+                cp_row,cv_row, &
+                gam1_row,gam2_row,gam3_row, &
+                cs_row
+!$omp threadprivate (/thder/)
+
+
+!c..for debugging
+!c      double precision crap1_row(nrowmax),
+!c     1                 dcrap1d_row(nrowmax),
+!c     2                 dcrap1t_row(nrowmax),
+!c     3                 dcrap1a_row(nrowmax),
+!c     4                 dcrap1z_row(nrowmax),
+!c      common /dbg3/    crap1_row,
+!c     1                 dcrap1d_row,dcrap1t_row,dcrap1a_row,dcrap1z_row
