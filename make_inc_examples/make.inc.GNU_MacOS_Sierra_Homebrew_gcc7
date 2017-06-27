@@ -1,0 +1,23 @@
+F95        = gfortran-7
+CXX        = g++-7
+CXXFLAGS   = -O3 -g 
+OPTION     = -O3 -g -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132
+LDFLAGS    = 
+
+# Change the below path to your custom installation
+# of hdf5. 
+# If you want to use the hdf5 that can be installed
+# via Homebrew, then you need to install it this way:
+# brew install hdf5 --with-fortran
+
+HDF5DIR=/Users/cott/opt/hdf5-1.10.1-gcc7
+HDF5LIBS=-L$(HDF5DIR)/lib -lhdf5 -lhdf5_fortran -lhdf5 -lz 
+HDF5INCS=-I$(HDF5DIR)/include
+
+LAPACKDIR=/usr/lib
+LAPACKLIBS=-L$(LAPACKDIR) -llapack
+
+BLASDIR=/usr/lib
+BLASLIBS=-L$(BLASDIR) -lblas
+
+MODDIR=-Jmod

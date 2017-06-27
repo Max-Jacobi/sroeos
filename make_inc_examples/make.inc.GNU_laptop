@@ -1,0 +1,21 @@
+# Include compiler and flags
+
+ F95        = gfortran
+ CXX        = g++
+ CXXFLAGS   = -O3 -g
+ OPTION     = -O3 -g -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132
+ LDFLAGS    =
+
+
+HDF5DIR=/usr/local/hdf5/
+HDF5LIBS=-L$(HDF5DIR)/lib/ -lhdf5_fortran -lhdf5
+HDF5INCS=-I$(HDF5DIR)/include/
+
+LAPACKDIR=/home/andre/Research/lapack-3.7.0/
+LAPACKLIBS=-L$(LAPACKDIR) -llapack
+
+BLASDIR=/home/andre/Research/lapack-3.7.0/
+BLASLIBS=-L$(BLASDIR) -lrefblas
+
+MODDIR=-Jmod
+

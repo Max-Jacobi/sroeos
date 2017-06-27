@@ -13,10 +13,12 @@ Documentation: User_Guide/User_Guide.pdf
 
 ### Quick Start:
 
-(1) Set up a make.inc file for your machine. Examples are provided,
-use a symbolic link to point to your custom file. See the User Guide
-for compiler and library dependencies. In short, you'll need Fortran,
-C/C++, HDF5, BLAS, and LAPACK.
+(1) Set up a make.inc file for your machine. It needs to be in the
+root directory of the EOS. Examples are provided in the
+make_inc_examples directory. Use a symbolic link to point to your
+custom file. See the User Guide for compiler and library
+dependencies. In short, you'll need Fortran, C/C++, HDF5, BLAS, and
+LAPACK.
 
 
 (2) The SRO EOS comes in three parts:
@@ -39,7 +41,12 @@ Code that merges SNA and NSE tables and adds electrons, positrons,
 and photons.
 
 
-(3) There are two more directories:
+(3) There are three more directories:
+
+Directory make_inc_examples:
+
+This directory contains various examples for the make.inc file.
+
 
 Directory eleos:
 

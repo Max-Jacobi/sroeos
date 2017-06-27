@@ -1,0 +1,17 @@
+F95= ifort
+CXX        = icpc
+CXXFLAGS   = -O3 -g -qopenmp
+OPTION     = -O3 -g -qopenmp
+LDFLAGS    = --static 
+
+HDF5DIR=/data/andre/hdf5-intel/
+HDF5LIBS=-L$(HDF5DIR)/lib/ -lhdf5_fortran -lhdf5 -lz 
+HDF5INCS=-I$(HDF5DIR)/include/
+
+LAPACKDIR=/usr/lib64
+LAPACKLIBS=-L$(LAPACKDIR) -llapack -lgfortran
+
+BLASDIR=/usr/lib64
+BLASLIBS=-L$(BLASDIR) -lblas
+
+MODDIR=-module mod -Imod

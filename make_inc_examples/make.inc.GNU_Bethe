@@ -1,0 +1,17 @@
+F95        = /usr/local/bin/gfortran
+CXX        = /usr/local/bin/g++
+CXXFLAGS   = -O3 -g 
+OPTION     = -O3 -g -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132
+LDFLAGS    = -static
+
+HDF5DIR=/home/cott/opt/hdf5-1.10.0-patch1-gcc5.2
+HDF5LIBS=-L$(HDF5DIR)/lib -lhdf5 -lhdf5_fortran -lhdf5 -lz -ldl
+HDF5INCS=-I$(HDF5DIR)/include
+
+LAPACKDIR=/usr/lib64
+LAPACKLIBS=-L$(LAPACKDIR) -llapack
+
+BLASDIR=/usr/lib64
+BLASLIBS=-L$(BLASDIR) -lblas
+
+MODDIR=-Jmod

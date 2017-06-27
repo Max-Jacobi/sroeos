@@ -12,3 +12,4 @@ version.inc
 *.log
 *.out
 *.toc
+make.inc

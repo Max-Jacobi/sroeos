@@ -1,0 +1,17 @@
+F95        = ifort
+CXX        = icpc
+CXXFLAGS   = -O3 -g -qopenmp
+OPTION     = -O3 -qopenmp -static -fp-model precise
+LDFLAGS    = --static
+
+HDF5DIR=/home/cott/opt/hdf5-1.10.1-intel
+HDF5LIBS=-L$(HDF5DIR)/lib/ -lhdf5_fortran -lhdf5 -lz -lgfortran -lquadmath
+HDF5INCS=-I$(HDF5DIR)/include/
+
+LAPACKDIR=/usr/lib64
+LAPACKLIBS=-L$(LAPACKDIR) -llapack
+
+BLASDIR=/usr/lib64
+BLASLIBS=-L$(BLASDIR) -lblas
+
+MODDIR=-module mod

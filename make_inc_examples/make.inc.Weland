@@ -1,0 +1,20 @@
+# Include compiler and flags
+
+F95        = gfortran
+# OPTION     = -g -fbacktrace -ffpe-trap=zero,overflow,underflow -Wuninitialized -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132
+CXX	   = g++
+CXXFLAGS   = -O3 -g
+OPTION     = -g -fopenmp -finit-local-zero -ffree-line-length-132
+LDFLAGS    = -static
+
+HDF5DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial
+HDF5LIBS=-L$(HDF5DIR) -lhdf5_fortran -lhdf5
+HDF5INCS=-I$(HDF5DIR)/include/
+
+LAPACKDIR=/usr/lib/
+LAPACKLIBS=-L$(LAPACKDIR) -llapack
+
+BLASDIR=/usr/lib/
+BLASLIBS=-L$(BLASDIR) -lblas
+
+MODDIR=-Jmod
