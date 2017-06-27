@@ -1,0 +1,7 @@
+*.o
+gitinfo
+*~
+src.tar.gz
+#*
+*.h5
+version.inc
