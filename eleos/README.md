@@ -3,9 +3,7 @@ Schneider-Roberts-Ott Equation of State (SRO EOS)
 
 Reference:
 
-Schneider, Roberts, Ott 2017
-Submitted to Physical Review C
-arXiv: [to be filled in]
+Schneider, Roberts, Ott 2017, submitted to Physical Review C, arXiv: [to be filled in]
 
 License: GPLv3 (see file LICENSE)
 
