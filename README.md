@@ -11,7 +11,7 @@ License: GPLv3 (see file LICENSE)
 
 Documentation: User_Guide/User_Guide.pdf
 
-*** Quick Start:
+### Quick Start:
 
 (1) Set up a make.inc file for your machine. Examples are provided,
 use a symbolic link to point to your custom file. See the User Guide
