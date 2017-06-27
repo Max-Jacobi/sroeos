@@ -1,4 +1,5 @@
 *.o
+*.mod
 gitinfo
 *~
 src.tar.gz
