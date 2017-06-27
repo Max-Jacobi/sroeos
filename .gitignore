@@ -5,3 +5,9 @@ src.tar.gz
 #*
 *.h5
 version.inc
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.toc
