@@ -4,8 +4,8 @@
 &tables
 make_hdf5_table  = .TRUE.,
 merge_base = 'SLy4_0023',
-sna_eos  = '../NSE/NSE_0023/SLy4_rho853_temp337_ye133_git7f51449_20170628.h5',
-nse_eos  = '../SNA/EOS_SLy4/NSE_0023_rho733_temp337_ye133_git7f51449_20170628.h',
+sna_eos  = '../SNA/EOS_SLy4/SLy4_rho853_temp337_ye133_git7f51449_20170628.h5',
+nse_eos  = '../NSE/NSE_0023/NSE_0023_rho733_temp337_ye133_git7f51449_20170628.h5',
 only_SNA = .FALSE.,
 only_NSE = .FALSE.,
 /
