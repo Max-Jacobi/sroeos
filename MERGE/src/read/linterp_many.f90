@@ -62,7 +62,7 @@ SUBROUTINE intp3d_many ( x, y, z, f, kt, ft, nx, ny, nz, nvars, xt, yt, zt)
       real*8 dx,dy,dz,dxi,dyi,dzi,dxyi,dxzi,dyzi,dxyzi
       integer n,ix,iy,iz
 
-      IF (kt .GT. ktx)  STOP'***KTX**'
+      IF (kt .GT. ktx)  STOP '***KTX**'
 !
 !
 !------  determine spacing parameters of (equidistant!!!) table
