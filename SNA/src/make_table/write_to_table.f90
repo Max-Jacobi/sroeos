@@ -77,7 +77,7 @@ CONTAINS
                   //"_rho"//trim(adjustl(string_n))  &
                   //"_temp"//trim(adjustl(string_T)) &
                   //"_ye"//trim(adjustl(string_Ye))  &
-                  //"git"//trim(adjustl(gitinfo)) &
+                  //"_git"//trim(adjustl(gitinfo)) &
                   //"_"//trim(adjustl(date))//".h5"
 
 
