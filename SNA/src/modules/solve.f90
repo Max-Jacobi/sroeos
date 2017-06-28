@@ -71,7 +71,7 @@ CONTAINS
 !$OMP PRIVATE(thread,i_T,i_n,i_Yp,dble_n,increment_n,count_u,count_nu) &
 !$OMP PRIVATE(n,Yp,T,Delta_n,Delta_T,t_transition,non_uniform_sol_found_for_T) &
 !$OMP PRIVATE(n_transition,n_transition_max,n_transition_min) &
-!$OMP PRIVATE(UNIFORM_SOL,NON_UNIFORM_SOL) &
+!$OMP PRIVATE(UNIFORM_SOL,NON_UNIFORM_SOL,write_solutions_to_file) &
 !$OMP PRIVATE(F_uniform,F_non_uniform,uniform_residue,non_uniform_residue) &
 !$OMP PRIVATE(UNIFORM_SOL_GUESS,NON_UNIFORM_SOL_GUESS) &
 !$OMP PRIVATE(UNIFORM_GUESS,NON_UNIFORM_GUESS) &
@@ -82,7 +82,7 @@ CONTAINS
 !$OMP PRIVATE(x_nu_guess_n,x_nu_guess_T,u_solution,nu_solution) &
 !$OMP PRIVATE(filename1,filename2,filenumber1,filenumber2,string_Yp)
 ! loop over proton fractions
-    DO i_Yp = Yp_ini, Yp_fin
+    DO i_Yp = Yp_fin, Yp_ini, -1
       ! set proton fraction
       Yp = Yp_min + dble(i_Yp-1)*Yp_step
       ! n_transition is the maximum density where we expect a transition
@@ -313,7 +313,8 @@ CONTAINS
           ENDIF
 !------------------------------------------------------------------------------!
 !         write solutions to output file
-          WRITE (filenumber1,"(3ES15.8,8ES16.8,I2,I3,6L2)") n, T, Yp,     &
+          IF (write_solutions_to_file) &
+                WRITE (filenumber1,"(3ES15.8,8ES16.8,I2,I3,6L2)") n, T, Yp, &
                 uniform_sol, non_uniform_sol, F_uniform, F_non_uniform,  &
                 uniform_residue, non_uniform_residue, count_u, count_nu, &
                 uniform_solution, non_uniform_solution, &
@@ -322,10 +323,9 @@ CONTAINS
 !         check for points where no solution was found
 !         TODO: save these points and interpolate a solution later
           IF ( .NOT. uniform_solution .AND. .NOT. non_uniform_solution) THEN
-            WRITE (filenumber2,"(5ES20.12,8L2)") n, T, Yp, uniform_residue, &
-             non_uniform_residue, uniform_solution, non_uniform_solution,   &
-             check_uniform, check_non_uniform_flag
-
+            IF (write_solutions_to_file) WRITE (filenumber2,"(5ES20.12,8L2)") &
+             n, T, Yp, uniform_residue, non_uniform_residue, uniform_solution,&
+             non_uniform_solution, check_uniform, check_non_uniform_flag
           ENDIF
 
           IF (nu_true) THEN
