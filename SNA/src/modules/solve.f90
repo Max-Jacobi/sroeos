@@ -65,13 +65,13 @@ CONTAINS
     write(6,*) "OpenMP parallization: density-temperature slices at fixed proton fraction."
     write(6,"(A11,I4,A7)") " There are ",Yp_fin," slices."
 !$OMP PARALLEL DO SCHEDULE (DYNAMIC,1) DEFAULT(NONE) &
-!$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min,outdir) &
+!$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min,outdir,write_solutions_to_file) &
 !$OMP FIRSTPRIVATE(n_ini,n_fin,steps_per_decade_in_n,Log10n_min) &
 !$OMP FIRSTPRIVATE(T_ini,T_fin,steps_per_decade_in_T,Log10T_min) &
 !$OMP PRIVATE(thread,i_T,i_n,i_Yp,dble_n,increment_n,count_u,count_nu) &
 !$OMP PRIVATE(n,Yp,T,Delta_n,Delta_T,t_transition,non_uniform_sol_found_for_T) &
 !$OMP PRIVATE(n_transition,n_transition_max,n_transition_min) &
-!$OMP PRIVATE(UNIFORM_SOL,NON_UNIFORM_SOL,write_solutions_to_file) &
+!$OMP PRIVATE(UNIFORM_SOL,NON_UNIFORM_SOL) &
 !$OMP PRIVATE(F_uniform,F_non_uniform,uniform_residue,non_uniform_residue) &
 !$OMP PRIVATE(UNIFORM_SOL_GUESS,NON_UNIFORM_SOL_GUESS) &
 !$OMP PRIVATE(UNIFORM_GUESS,NON_UNIFORM_GUESS) &
