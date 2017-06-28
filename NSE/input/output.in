@@ -1,0 +1,9 @@
+&TABLE_INPUT
+!
+! Set table file name base
+!
+  make_hdf5_table = .true.,
+  write_solutions_to_file = .true.
+  filename_base   = "NSE_0023",  ! base for HDF5 table names
+  output_directory= "NSE_0023",  ! directory for ascii output files
+/
