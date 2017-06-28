@@ -49,8 +49,8 @@ CONTAINS
     only_SNA = .FALSE.
     only_NSE = .FALSE.
 
-    ! nchanged is in ../version.inc, included in                                                         
-    ! Make_Tables_Mod                                                                                    
+    ! nchanged is in ../version.inc, included in
+    ! Make_Tables_Mod
     if(nchanged > 0) then
        gitinfo = "M"//trim(adjustl(git_version))
     else
@@ -101,38 +101,40 @@ CONTAINS
     READ(10,NML=TRANSITION)
     CLOSE(10)
 
-    IF (n_transition==zero) THEN
-      WRITE (*,*) 'n_transition in transition.in file not set.'
-      WRITE (*,*) 'Using default value n_transition = -4.D0'
-      n_transition = -4.00d0
-    ENDIF
-    IF (n_delta==zero) THEN
-      WRITE (*,*) 'n_delta in transition.in file not set.'
-      WRITE (*,*) 'Using default value n_delta = 0.33'
-      n_delta      =  0.33d0
-    ENDIF
-    IF (n_tolerance==zero) THEN
-      WRITE (*,*) 'n_tolerance in transition.in file not set.'
-      WRITE (*,*) 'Using default value n_delta = 1.D-4'
+    IF (.not.only_sna .AND. .not. only_nse) THEN
+      IF (n_transition==zero) THEN
+        WRITE (*,*) 'n_transition in transition.in file not set.'
+        WRITE (*,*) 'Using default value n_transition = -4.D0'
+        n_transition = -4.00d0
+      ENDIF
+      IF (n_delta==zero) THEN
+        WRITE (*,*) 'n_delta in transition.in file not set.'
+        WRITE (*,*) 'Using default value n_delta = 0.33'
+        n_delta      =  0.33d0
+      ENDIF
+      IF (n_tolerance==zero) THEN
+        WRITE (*,*) 'n_tolerance in transition.in file not set.'
+        WRITE (*,*) 'Using default value n_delta = 1.D-4'
+      ENDIF
     ENDIF
 
     IF (only_SNA) THEN
-      WRITE (*,*) 
+      WRITE (*,*)
       WRITE (*,*) 'Paramater only_SNA was set to TRUE.'
       WRITE (*,*) ' Setting value of n_transition to -100 to avoid issues.'
       WRITE (*,*) ' Setting value of n_delta      to  0.5 to avoid issues.'
-      WRITE (*,*) 
+      WRITE (*,*)
       n_transition = -100.0d0
       n_delta      =  0.5d0
       n_tolerance  =  1.0d-6
     ENDIF
 
     IF (only_NSE) THEN
-      WRITE (*,*) 
+      WRITE (*,*)
       WRITE (*,*) 'Paramater only_NSE was set to TRUE.'
       WRITE (*,*) ' Setting value of n_transition to +100 to avoid issues.'
       WRITE (*,*) ' Setting value of n_delta      to  0.5 to avoid issues.'
-      WRITE (*,*) 
+      WRITE (*,*)
       n_transition = +100.0d0
       n_delta      =  0.5d0
       n_tolerance  =  1.0d-6

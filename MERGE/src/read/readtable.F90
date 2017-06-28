@@ -206,7 +206,7 @@ CONTAINS
             STOP
           ENDIF
         CASE("SNA")
-          IF (Log10n_max > logrho(dims1(1))) THEN
+          IF (Log10n_max < logrho(dims1(1))) THEN
             WRITE (*,*) "ERROR SETTING MERGE PARAMETER Log10n_max:"
             WRITE (*,*) "  Maximum density in SNA table lower than "
             WRITE (*,*) "  maximum density set in MERGE code.       "
