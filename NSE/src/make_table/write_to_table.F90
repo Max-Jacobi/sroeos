@@ -70,7 +70,8 @@ CONTAINS
                 + (dble(values(5)) + dble(values(6))/60.0d0 &
                 + dble(values(7))/3600.0d0)/24.0
 
-    h5_filename = trim(adjustl(filename_base)) &
+    h5_filename = trim(adjustl(output_directory))//"/"// & 
+                  trim(adjustl(filename_base)) &
                   //"_rho"//trim(adjustl(string_n))  &
                   //"_temp"//trim(adjustl(string_T)) &
                   //"_ye"//trim(adjustl(string_Ye))  &
