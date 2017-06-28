@@ -1,0 +1,2046 @@
+\documentclass[letterpaper,11pt]{refart}
+\usepackage{hyperref}
+\usepackage{amssymb,amsmath,mathtools}
+\usepackage{enumitem}
+\usepackage{framed}
+\usepackage[normalem]{ulem}
+
+\hypersetup{colorlinks,urlcolor=blue,linkcolor=black,citecolor=black}
+
+\newcommand*{\email}[1]{\href{mailto:#1}{\nolinkurl{#1}}} 
+\newcommand{\srourl}{\url{https://stellarcollapse.org/SROEOS}}
+\newcommand{\LS}{L\&S }
+\newcommand{\LSn}{L\&S}
+\newcommand{\SRO}{SRO }
+\newcommand{\SROn}{SRO}
+\newcommand{\todo}[1]{{\color{BurntOrange}\bf $\blacksquare$~{[TODO: #1]}}}
+\newcommand{\lime}[1]{{\textcolor{LimeGreen}{#1}}}
+\newcommand{\sch}[1]{{\color{OrangeRed}$\blacksquare$~\textsf{[A COMMENT: #1]}}}
+
+\usepackage[dvipsnames]{xcolor}
+\usepackage{newverbs}
+
+\usepackage{tocloft}
+\usepackage{etoolbox}
+\patchcmd{\thebibliography}{\section*}{\section}{}{}
+
+\makeatletter
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+                           {-3.25ex\@plus -1ex \@minus -.2ex}%
+                           {0.3ex \@plus .2ex}%
+                           {\normalfont\normalsize\bf\fontsize{11}{13}\selectfont}}
+\makeatother
+
+\newverbcommand{\verbfile}{\color{red}}{}
+\newverbcommand{\verbexec}{\color{magenta}}{}
+\newverbcommand{\verbnml}{\color{cyan}}{}
+\newverbcommand{\verbprm}{\color{ForestGreen}}{}
+
+\newenvironment{namelist}
+  {
+    \VerbatimEnvironment
+    \vskip\baselineskip\hrule
+    \begin{Verbatim}[xleftmargin=0pt]%
+  }
+  {\end{Verbatim}\hrule\vskip\baselineskip}
+
+\renewcommand\abstractname{Abstract}
+\oddsidemargin = 1.5in
+\settextfraction {1.0}
+
+
+\title{The Schneider-Roberts-Ott Equation of State Code}
+\author{Andre da Silva Schneider (\email{andschn@caltech.edu}) 
+     \\ Luke F. Roberts (\email{robertsl@nscl.msu.edu})
+     \\ Christian D. Ott (\email{cott@tapir.caltech.edu})
+     \\ \url{https://bitbucket.org/andschn/sroeos}
+     \\ \url{https://stellarcollapse.org/SROEOS}
+     \\ \email{SROEOS@stellarcollapse.org}
+       }
+
+\date{}
+
+\begin{document}
+\maketitle
+
+
+\noindent \begin{flushright}{Last updated \date{\today}.}\end{flushright}
+
+\begin{abstract}
+
+This is the user guide to the Schneider-Roberts-Ott (SRO) equation of
+state code described in Schneider, Roberts, \& Ott (2017)
+\cite{schneider:17}.  Here we provide details on how to compile and
+run the various parts of the SRO code. We also discuss the details of
+their inputs and outputs.
+\end{abstract}
+
+\tableofcontents
+
+
+\section{Introduction}
+
+The Schneider-Roberts-Ott (SRO) equation of state (EOS) code is
+intended to build EOS tables of hot dense matter for astrophysical
+simulations. The development of the SRO EOS was supported by the
+National Science Foundation Theoretical and Computational Astrophysics
+Network (TCAN) award NSF AST-1333520.
+
+
+Our work, described in Reference \cite{schneider:17} (SRO hereafter),
+builds upon the seminal work of Lattimer and Swesty (\LS hereafter)
+\cite{lattimer:91} and presents a generalized method to generate EOSs
+using a compressible non-relativistic liquid-drop model with Skyrme
+interactions.
+
+
+At low densities, one may chose to transition from the \LSn-type EOS,
+which uses a single nucleus approximation (SNA), to a nuclear
+statistical equilibrium (NSE) description of an ensemble of nuclei. To
+simplify its usage, the SRO code is separated into three different
+parts:
+\begin{enumerate}[label={(\arabic*)}]
+ \item The single nucleus approximation (\texttt{SNA}) code that builds a
+   nuclear EOS using a compressible non-relativistic liquid-drop model
+   with Skyrme interactions. The \texttt{SNA} code does not add electrons,
+   positrons, and photons.
+ \item The nuclear statistical equilibrium (\texttt{NSE}) code, which
+   builds a nuclear EOS for a mixture of non-interacting nuclei.  The
+   \texttt{SNA} code also does not add electrons, positrons, and photons.
+
+ \item The \texttt{MERGE} code which combines the SNA and/or the NSE
+   EOSs and adds electrons, positrons, and photons. If so desired,
+   \texttt{MERGE} can also run on pure SNA or pure NSE tables.
+
+   \textbf{IMPORTANT:} We recommend that the user read the description
+   of the \texttt{MERGE} code first before generating SNA and NSE
+   tables.  Care must be taken when setting up the SNA and NSE table
+   resolutions and ranges. This is discussed in
+   Section~\ref{sssec:MERGE_phase}.
+   
+\end{enumerate}
+The reason for our choice of having three separate parts is that one
+may want to separately build SNA and NSE tables and change the
+parameters used to merge different EOSs without having to rebuild
+them.  This is discussed in detail in Section VII.A.\ of
+SRO~\cite{schneider:17}.
+
+
+The SRO code is written using a modern, modular, and OpenMP-threaded Fortran
+90+ framework and is made publicly available at \srourl\, under the
+\textsc{Gnu General Public License} version 3 (GPL 3).
+
+Some files and subroutines used in the SRO code are from other
+open-source codes and were slightly modified to suit our needs. These
+are:
+\begin{enumerate}
+ \item The Timmes \& Arnett EOS is used to compute the EOS of electrons and photons. For details see Appendix A of SRO and Reference \cite{timmes:99}. 
+ \item The Fermi integrals and their inverses are computed using the subroutines of Fukushima \cite{fukushima:15,fukushima:15b}.
+ \item To solve the system of Equations (38) in SRO, we use the equation solver package ``\textit{nleqslv}'' of Hasselman \cite{hasselman:16}. 
+ \item Derivatives of thermodynamical quantities w.r.t. parameters that are a function of coupled independent variables are computed using the LU decomposition subroutines of the \LS code available at \url{http://www.astro.sunysb.edu/dswesty/lseos.html}. 
+\end{enumerate}
+
+
+
+Besides the \SRO code, we also provide open-source Fortran 90 and C++
+HDF5 table readers that interpolate between calculated values.
+
+\section{Disclaimer and Getting Help}
+
+\begin{framed}
+The SRO EOS code is open source under the GNU General Public License
+version 3 and may be used at your own risk. The code comes with
+absolutely no warranty. While we will always try to help users, we are
+unable to guarantee that we will be able to provide support or help if
+you run into problems running it. If you decide to use the SRO EOS
+code or tables generated with it in published work, it is your
+responsibility to test the code and ensure its physical correctness
+and consistency in the application problem you are using it for.
+\end{framed}
+
+As a prerequisite to running the SRO EOS code, you should be familiar
+and comfortable with the Linux/Unix-style command line and file
+systems (including symbolic links), with compilers and Makefiles, and
+with installing external libraries either by hand or via your
+operating system's package manager.
+
+If you run into physics problems, find bugs, or inconsistencies, please
+let us know by sending email to this address:
+
+\begin{center}
+\texttt{SROEOS@stellarcollapse.org} 
+\end{center}
+
+Please understand that our resources and time are limited and we may
+not be able to help you with basic compilation problem, coding
+problems, or with problems with external libraries.
+
+\section{Software Dependencies and \texttt{make.inc} for Compilation}
+\label{sec:req}
+
+The SRO EOS code requires the following software on your system:
+
+\begin{enumerate}
+\item The git version control system. We recommend git version 2 and
+  higher. If it is not already installed, try installing it via
+  your operating system's package manager or get it from
+  \url{https://git-scm.com}.
+ \item Fortran 90+, C++, and C compilers, such as the \verb|gcc|
+   compiler suite available at \url{https://gcc.gnu.org} or
+   through your operating system's package manager. Your compiler suite
+   must support OpenMP parallelization (most current ones do).
+
+ \item The \verb|HDF5| library, available at
+   \url{https://support.hdfgroup.org/HDF5/}. It must be compiled with
+   Fortran 90+ support.
+
+ \item The \verb|BLAS| library, available at
+   \url{http://www.netlib.org/blas/} or through your operating
+   system's package manager.
+
+ \item The \verb|LAPACK| library, available at
+   \url{http://www.netlib.org/lapack/} or through your operating
+   system's package manager.
+
+
+\end{enumerate}
+Note that, in general, the \verb|HDF5|, \verb|LAPACK|, and \verb|BLAS|
+libraries must be compiled with the same compiler(s) (and compiler
+version(s)) used to compile the SRO EOS code components.
+
+Should you decide to compile some of the above libraries yourself, we
+strongly recommend that you disable shared libraries and go with
+static libraries instead. This will greatly reduce potential headaches
+with dynamically linked symbols that are not found. Also, as a general
+guideline, if you can link the SRO EOS code components statically, do
+so. Linking statically may not be possible on MacOS.
+
+Once you have setup all software/libraries, you need to create the
+\texttt{make.inc} file in the root directory of the SRO EOS code. This
+file is read by the SRO EOS Makefiles to compile the code components
+\texttt{SNA}, \texttt{NSE}, and \texttt{MERGE}. We provide various
+examples for Linux and MacOS systems in the directory \textcolor{red}{\texttt{make\_inc\_examples}}.
+
+\section{The Single Nucleus Approximation Code \texttt{SNA}}\label{sec:SNA}
+
+The \texttt{SNA} code (residing in the \texttt{SNA} subdirectory) is
+used to compute the EOS of hot dense matter using a compressible
+non-relativistic liquid-drop model with Skyrme interactions. It does
+not include electrons, positrons, and photons.
+
+The \texttt{SNA} code computes the most favorable composition of
+nuclear matter for a given Skyrme parametrization for the
+nucleon-nucleon interactions for a range of proton fraction $y$
+(identical to electron fraction $Y_e$ because of charge neutrality),
+temperature $T$, and number density $n$. A discussion of the code
+library dependencies, its input and output as well as units used are
+detailed in the rest of this section.
+
+
+\subsection{Compiling and Running the \texttt{SNA} Code}\label{ssec:SNA_dep}
+
+Make sure your system satisfies the requirements outline in
+\S\ref{sec:req} and that your \texttt{make.inc} file is set up
+correctly.
+
+Compiling the \verb|SNA| code should now be as simple as typing on
+your terminal from the root directory of the SRO EOS:
+
+\begin{verbatim}
+ > cd SNA
+ > make
+\end{verbatim}
+
+
+This will create two executables in the \verbfile|SNA| directory,
+\verbexec|main| and \verbexec|test|.  Their inputs and outputs are
+discussed in Sections \ref{ssec:SNA_in} and \ref{ssec:SNA_out},
+respectively.
+
+\textbf{IMPORTANT:} When solving for the EOS, the code will make use
+of OpenMP parallelization. It will use as many OpenMP threads as
+specified by the system environment variable
+\texttt{OMP\_NUM\_THREADS}. Make sure to check what this is set to and
+adjust it, if you want to use less or more threads. We do not
+recommend using more threads than available physical CPU cores on your
+machine.
+
+
+
+We carried out tests of both executables using both the \texttt{GNU}
+and the Intel compiler suite.  Even though all computations are
+performed using double precision arithmetic, small fluctuations in
+some of the results, usually of $\mathcal{O}(10^{-7})$ or less, may
+occur depending on the compiler used and the optimization level flag
+\verb|-O#| chosen in the \texttt{make.inc}. Experiments show that
+these small differences result from the computation of some second
+derivatives when obtaining surface properties of nuclear matter.
+
+
+\subsection{Input}\label{ssec:SNA_in}
+
+The \texttt{\textcolor{magenta}{main}} and
+\texttt{\textcolor{magenta}{test}} executables take two input files,
+with one of the input files being the same for both:
+\verbfile|input/skyrme.in|.  The \verbexec|main| executable uses as its 
+second input the \verbfile|input/space.in|
+file, which contains details on the ranges and resolutions in density,
+temperature, and proton fraction for the resulting EOS. The
+\verbexec|test| executable uses as its second input the
+\verbfile|input/test.in| file, which contains a single point in
+density, temperature, and proton fraction, and, if desired, an initial
+guess for the solution.  We discuss these input files in the
+following.
+
+
+
+
+\subsubsection{The Skyrme input \textcolor{red}{\texttt{input/skyrme.in}}}
+\label{sssec:skyrme.in}
+
+\sloppy The \verbfile|input/skyrme.in| file contains four required and
+three optional Fortran namelists that specify the Skyrme
+parametrization being used and other EOS parameters and code control
+flags.  The code will read \verbfile|input/skyrme.in|, but the file
+itself is a symbolic link.  By default it points to
+\verbfile|input/list_SKRA.in|, which is the file specifying the SKRA
+parametrization.  If a different parametrization is desired, the
+symbolic link can be changed to point to one of the other
+parameterizations that we provide (or to a user-customized file).  In
+the \verbfile|input| directory, we provide parameter sets for the
+following parametrizations (as described in the SRO EOS paper
+\cite{schneider:17}): KDE0v1, LNS, LS220, LS220*, NRAPR, SKRA, SkT1,
+SkT1$^*$, Skxs20, SLy4, and SQMC700. See the SRO paper
+\cite{schneider:17} for a discussion of these parametrizations.
+
+The Fortran namelists in the \verbfile|input/skyrme.in| file are
+\begin{enumerate}
+ \item \verbnml|TABLE_INPUT| (required),
+ \item \verbnml|SKYRME_TYPE| (required),
+ \item \verbnml|SKYRME_COEFFICIENTS| (required),
+ \item \verbnml|SURFACE_PROPERTIES| (required),
+ \item \verbnml|HEAVY_NUCLEI_SIZE| (optional), 
+ \item \verbnml|STIFFEN_EOS| (optional),
+ \item \verbnml|TABLE_OUTPUT| (optional).
+\end{enumerate}
+
+\bigskip
+
+\textbf{The \texttt{\color{cyan} TABLE\_INPUT} Namelist}
+
+
+The \verbnml|TABLE_INPUT| namelist contains information about the type
+of output files to write, their names, and locations.  An example of
+the \verbnml|TABLE_INPUT| namelist, taken from
+\verbfile|input/list_SKRA.in| file, is the following:
+
+{\color{cyan}
+\begin{verbatim}
+&TABLE_INPUT
+  filename_base     = "SKRA",
+  output_directory  = "EOS_SKRA",
+  make_hdf5_table   = .true.,
+  write_solutions_to_file = .false.,
+  redefine_print_parameters = .false.,
+/
+\end{verbatim}}
+Note that the only parameter of this list relevant to the
+\verbexec|test| executable is \verbprm+output_directory+ as that is
+where the code's output, if any, is written.  For the \verbexec+main+
+executable, the only required parameters are
+\verbprm+output_directory+ and
+\verbprm+filename_base+. The logical parameters are set by default to
+the values given above and only need to be explicit if changed. The
+parameter \verbprm+redefine_print_parameters+ is used to limit the
+quantities printed to the SNA EOS table. Its usage is described
+alongside the \verbnml+TABLE_OUTPUT+ namelist below.
+
+
+The parameter \verbprm|make_hdf5_table| sets whether to write an 
+\verb|HDF5| table in the \verbfile|output_directory| directory.  
+The table name starts with \verbprm|filename_base| followed by 
+information about the table resolution in $\log_{10}$(density), 
+$\log_{10}$(temperature), and proton fraction. Next is information on 
+the git revision. If the code to make the table was compiled from a 
+repository with local changes, the short git hash is prepended with a 
+captial ``M''. If the repository is all fully committed, the short git 
+hash has no prefix. Finally, the name contains the date the table was
+generated. For example, using the default
+\verbfile|input/skyrme.in| and \verbfile|input/space.in| files,
+a table name could look lik this:
+\verbfile|SKRA_rho427_temp169_ye67_gitMd089cf6_20170624.h5|.  Note
+that the table is only written after all solutions have been
+computed. Also note that we are including the full source code and all
+inputs needed to generate the table. See Section~\ref{sec:formaline}
+for details on this. 
+
+
+The details of the contents (including units) of the \verb|HDF5| output file 
+is discussed in Section~\ref{sssec:SNA_main_out}.
+
+  
+The
+\verbprm|write_solutions_to_file| variable determines whether to write the independent
+variables that solve the system of equations and other debugging
+information for each point in phase space to an ASCII file. By the
+default it is set to
+\verbprm|false|. If \verbprm|write_solutions_to_file = .true.|, the
+code creates the directories \verbfile|SOL| and \verbfile|NO_SOL|
+inside the \verbfile|output_directory|.  An output file for each
+proton fraction $y$ is created in
+\verbfile|SOL| in which the solutions to Equations (38) in SRO \cite{schneider:17}, as well as the solution for
+the uniform system discussed in Section \ref{ssec:SNA_out}, are
+written for each temperature and density.  To debug issues at density,
+temperature, and proton fraction points where no solutions were found,
+an output file for each proton fraction $y$ is created in
+\verbfile|NO_SOL|.  If no solution is found for a given point, a
+detailed error of the likely issue is stored in the corresponding $y$
+file.  We provide a detailed description of the output files in
+Section \ref{ssec:SNA_out}.
+
+
+\bigskip
+\textbf{The \texttt{\color{cyan} SKYRME\_TYPE} Namelist}
+
+The \verbnml|SKYRME_TYPE| namelist is used to give a few details on
+the input Skyrme parametrization. An example is shown below.
+
+{\color{cyan}
+\begin{verbatim}
+&SKYRME_TYPE
+  Skyrme_parametrization_type  = 0,
+  non_local_terms              = 1, ! (default is 1) 
+  Use_default_constants        = 0, ! (default is 0) 
+  High_density_stiffening      = .FALSE., ! (default is .FALSE.) 
+/
+\end{verbatim}}
+
+
+
+%This namelist contains 4 inputs:
+%\verbprm|Skyrme_parametrization_type|,
+%\verbprm|non_local_terms|, \verbprm|Use_default_constants|, and
+%\verbprm|High_density_stiffening|.
+
+The integer parameter \verbprm|Skyrme_parametrization_type| can assume
+the values 0 and 1:
+
+\begin{itemize}
+
+\item \verbprm|Skyrme_parametrization_type = 0| $\Rightarrow$ uses
+  ``standard'' Skyrme terms, \textit{i.\,e.}, the Skyrme terms usually
+  found in the literature. The standard Skyrme parameters are $x_j$,
+  $t_j$ (with $j=0,1,2,3i$), and $\sigma_i$. Here, $i$ is the number
+  of non-local terms given by the parameter
+  \verbprm|non_local_terms|. For almost every parameterization found
+  in the literature $i=1$. In the code, the ``standard'' terms are
+  converted to the ``simplified'' Skyrme terms using Equation (14) of
+  SRO \cite{schneider:17}.
+
+\item \verbprm|Skyrme_parametrization_type = 1| $\Rightarrow$ reads as
+  input the ``simplified'' Skyrme parameters $a$, $b$, $c_i$, $d_i$,
+  $\delta$, $\alpha_1$, $\alpha_2$, and $q_{tt'}$ for $t,t'=p,n$ (see
+  Equation 14 of \cite{schneider:17}). Any values not given are
+  assumed to be zero. Again, $i$ is the number of non-local terms
+  given by the parameter \verbprm|non_local_terms|.
+
+\end{itemize}
+
+
+The next control in the \verbnml|SKYRME_TYPE| namelist is
+\verbprm|Use_default_constants|.  Its value can be 0 or 1.  If \verbprm|Use_default_constants = 0|
+then experimental values for the neutron and proton masses are
+used.  Also, the neutron proton mass difference $\Delta=m_n-m_p$ is
+obtained self-consistently and the binding energy of alpha particles
+is determined with respect to that of a gas of free neutrons,
+$B_\alpha=30.8866$\,MeV.  Otherwise, if
+\verbprm|Use_default_constants = 1| then $m_n=m_p$,
+$\Delta=1.29$\,MeV, and $B_\alpha=28.3$\,MeV.  The latter choice is
+consistent with that used by \LS \cite{lattimer:91}.
+
+
+Finally,
+\verbprm|High_density_stiffening| can assume the values \verbprm|.true.|
+or \verbprm|.false.|.  If set to \verbprm|.false.|, no modifications to
+the Skyrme parameterization given in the namelist
+\verbnml|SKYRME_COEFFICIENTS| is performed.  If set to
+\verbprm|.true.|, then extra terms are added to the Skyrme parametrizations
+that stiffen the EOS at high densities.  The stiffening follows the
+discussion of Section V A of SRO \cite{schneider:17} and is controlled
+by the namelist \verbnml|SKYRME_STIFFENING| discussed below.
+
+
+
+\textbf{The \texttt{\color{cyan} SKYRME\_COEFFICIENTS} Namelist}
+
+The \verbnml|SKYRME_COEFFICIENTS| namelist contains the Skyrme
+parameters.  Its format for the case
+\verbprm|Skyrme_parametrization_type = 0| and
+\verbprm|non_local_terms = 1| for the SKRA parametrization is shown
+below.
+
+{\color{cyan}
+\begin{verbatim}
+ &SKYRME_COEFFICIENTS
+  Coeff_t0            = -2895.4000d0, ! in MeV fm^3
+  Coeff_t1            =   405.5000d0, ! in MeV fm^5
+  Coeff_t2            =   -89.1000d0, ! in MeV fm^5
+  Coeff_t3            = 16660.0000d0, ! in MeV fm^(3+3*sigma)
+  Coeff_x0            =     0.0800d0, ! dimensionless
+  Coeff_x1            =     0.0000d0, ! dimensionless
+  Coeff_x2            =     0.2000d0, ! dimensionless
+  Coeff_x3            =     0.0000d0, ! dimensionless
+  Coeff_sigma         =     0.1422d0, ! dimensionless
+/
+\end{verbatim}}
+
+If the standard Skyrme parameters are given as shown here
+(\verbprm|Skyrme_parametrization_type = 0|), the simplified parameters
+($a$, $b$, $c_i$, $d_i$, $\delta_i$, $\alpha_1$, $\alpha_2$, and
+$q_{tt'}$) are calculated using Equations (14) and (27) of SRO
+\cite{schneider:17}.
+
+
+In the \verbprm|Skyrme_parametrization_type = 1| case, the simplified
+Skyrme parameters must be given in the \verbnml|SKYRME_COEFFICIENTS|
+namelist. Parameters that are not explicitly set in the
+\verbnml|SKYRME_COEFFICIENTS| namelist are assumed to be zero. An
+example for the LS220 parametrization is shown in
+\verbfile|input/list_LS220.in| file.
+
+
+
+
+\bigskip
+\textbf{The \texttt{\color{cyan} SURFACE\_PROPERTIES} Namelist}
+
+The \verbnml|SURFACE_PROPERTIES| namelist controls how the surface
+properties are obtained (see Section II.B.\ of SRO
+\cite{schneider:17}). In can also contain information on the
+proton-fraction dependence of the critical temperature (see Equation
+22 of SRO \cite{schneider:17}).  For the SKA case, we have:
+
+
+{\color{cyan}
+\begin{verbatim}
+ &SURFACE_PROPERTIES
+  fit_surface    = .false.,
+  Surface_sigma  =   1.124937302481D+00, ! in Mev fm^(-2)
+  Surface_q      =   2.398029067503D+01, ! dimensionless
+  Surface_p      =   1.707004256669D+00, ! dimensionless
+  Surface_lambda =   3.702622653011D+00, ! dimensionless
+/
+\end{verbatim}}
+
+If \verbprm|fit_surface = .false.|, then the code will use the specified
+precomputed surface parameters (see Section II.B.\ of SRO
+\cite{schneider:17}) as in the above. We provide precalculated surface
+parameter values for all included parameterizations. Note that the
+provided values may change slightly $\mathcal{O}(10^{-6} - 10^{-7})$,
+depending on the compiler and optimization flag used, since the calculation
+in sensitive to round-off error.  We do not
+expect differences of this order to significantly alter the EOS.
+
+
+If \verbprm|fit_surface = .true.|, then the code will compute the
+surface parameters, which can take $\sim2 - 5$ minutes, which is
+significant if one is simply interested in running the \verbexec|test|
+code. \verbprm|fit_surface=.true.| must be used for any parameterization
+for which the surface parameters are not known. 
+Once the surface fit for a given parametrization is found, 
+the user should look up its values in the 
+\verbfile+output_directory/Surface_properties.dat+ file, change 
+\verbprm|fit_surface = .true.|  to  \verbprm|fit_surface = .false.|
+in the  \verbfile+list.in+ file and copy the values of the fit 
+parameters to the  \verbnml|SURFACE_PROPERTIES|  namelist described below. 
+This prevents the surface properties from being calculated every time 
+the user wants to run a test or remake a table reusing a given parametrization.
+For the parametrizations available in the  \verbfile+input+ directory, the 
+surface fittings are already provided.
+
+
+
+Note that in the \verbnml|SURFACE_PROPERTIES| namelist shown above,
+the critical temperature $T_c(y_i)$ (Equation 22 of SRO
+\cite{schneider:17}) fitting is performed by the code since, by
+default, \verbprm|fit_temperature = .true.|. However, this calculation
+is extremely fast we do not bother do add the precalculated values for
+the parameterization in Equation (22).  However, in the
+\verbfile|input/list_LS220star.in| input of the LS220$^*$ case (see
+\cite{schneider:17}), we set \verbprm|fit_temperature = .false.| and
+specify the critical temperature fit coefficients explicitly to use
+the same fit as L\&S. 
+
+
+\bigskip
+\textbf{The \emph{optional} \texttt{\color{cyan} HEAVY\_NUCLEI\_SIZE}
+  Namelist}
+
+
+
+In Section 2.9 of L\&S~\cite{lattimer:91}, the size of heavy nuclei in
+the translational part of the free energy is fixed to $A=A_0=60$.
+Though we compute $A$ self-consistently, we also allow for an optional
+a \verbnml|HEAVY_NUCLEI_SIZE| namelist in case one wants to compute
+the EOS using the prescription of \LSn. This requires adding
+the \verbnml|HEAVY_NUCLEI_SIZE| namelist to 
+\verbfile|input/skyrme.in|:
+{\color{cyan}
+\begin{verbatim}
+&HEAVY_NUCLEI_SIZE
+  fix_heavy_nuclei_size = .true.,
+  A00 = 60.d0,
+/
+\end{verbatim}}
+Note that \verb+A00+ is the desired fixed value for heavy nuclei,
+$A_0$.  If \verb+A00+ is too small (\verb+A00+$\lesssim30$) or too
+large (\verb+A00+$\gtrsim120$), problems can occur in the EOS
+calculation.
+
+
+
+\bigskip
+\textbf{The \emph{optional} \texttt{\color{cyan} SKYRME\_STIFFENING}
+  Namelist}
+
+As discussed in Section V.A.\ of SRO~\cite{schneider:17}, most Skyrme
+parametrizations are unable to produce neutron stars with masses as
+high as those observed in nature.  Thus, we add the option to include
+extra terms to the Skyrme parametrization that stiffens the EOS at
+high densities. These terms are added in the namelist
+\verbnml|SKYRME_STIFFENING|.  The extra terms are determined following
+Section V.A.\ of SRO \cite{schneider:17} (see Equation 56).  The
+stiffening exponent $\delta_2$ is given by the parameter
+\verbprm+stiffening_exponent+, while the ratio shown in Equation (56)
+of SRO \cite{schneider:17} is given by
+\verbprm+stiffening_ratio+. Finally, the weight $w$ between the extra $c_2$ and $d_2$ terms is controlled by the parameter
+\verbprm+stiffening_symmetry+ in such a way that $c_2+d_2=wc_2+(1-w)d_2$.  For the SkT1* parametrization
+discussed in SRO~\cite{schneider:17} the namelist has the form {\color{cyan}
+\begin{verbatim}
+&SKYRME_STIFFENING
+  stiffening_exponent = 5.00d0,
+  stiffening_ratio    = 0.01d0,
+  stiffening_symmetry = 1.00d0,
+/
+\end{verbatim}}
+
+
+
+\vspace*{1cm}
+
+\textbf{The \emph{optional} \texttt{\color{cyan} TABLE\_OUTPUT}
+  Namelist}
+
+
+The final (optional) namlist is \verbnml|TABLE_OUTPUT|.  
+By default all possible output variables are written
+to the \verb|HDF5| table.  However, by adding the \verbnml|TABLE_OUTPUT| 
+namelist and selecting \verbprm|redefine_print_parameters = .true.|,
+one may select a set of variables to \emph{not} be written to the
+tables.  The output variables are discussed in
+Section~\ref{sssec:SNA_HDF5} of this user guide.
+
+For example, one of the written variables is the pressure $P$, which
+appears in the HDF5 table as \verbprm+p+.  To not write the pressure
+variable to the final table add the namelist {\color{cyan}
+\begin{verbatim}
+&TABLE_OUTPUT
+  print_p = .false.,
+/
+\end{verbatim}}
+For other variables simply add \verbprm|print_(variable name) = .false.|, where
+\verbprm|variable name| is one of the variables discussed in 
+Section~\ref{sssec:SNA_HDF5}.
+
+
+\bigskip
+
+\subsubsection{SNA test input}\label{sssec:SNA_test_in}
+
+
+The \verbexec+test+ executable takes as input the namelist
+\verbnml+input_test_list+ in
+\verbfile+input/test.in+.  This namelist determines the point in density, 
+temperature, and proton fraction
+where to calculate the EOS. If desired, an initial guess can be given
+for the variables that are used in the solution of the EOS for 
+uniform and non-uniform nuclear matter.
+
+
+{\color{cyan}
+\begin{verbatim}
+&input_test_list
+! point in phase space
+proton_fraction =  30.0D-02, ! proton fraction for test
+temperature     =  1.00D-00, ! temperature in MeV for test
+density         =  1.00D-03, ! density in fm^-3 for test
+! use initial guesses?
+guess                 = .true.,
+uniform_sol_guess     = -6.5d0,
+non_uniform_sol_guess = -9.0D0, -110.0D0, -2.15D0,
+/
+\end{verbatim}}
+As discussed in \LSn~\cite{lattimer:91} the solution for the uniform system 
+is solved in terms of the independent variable $y_p=n_{po}/n$ such that
+\begin{equation}
+n_{no}=n\frac{y_p(2-nv_\alpha(1-y))+2(1-2y)}{2-nv_\alpha y}\,.
+\end{equation}
+
+The notation used here is the same as in SRO~\cite{schneider:17}.
+From the value of $y_p$ one obtains the neutron and proton densities,
+$n_{no}$ and $n_{po}$, respectively.  Round-off errors make it
+difficult to find solutions for uniform proton rich matter ($y>0.50$)
+for most densities $n$ and temperatures $T$ when using the above
+independent parameter.  Thus, unlike \LSn, for proton rich matter, we
+choose the independent variable to be $y_n=n_{no}/n$, which implies
+\begin{equation}
+n_{po}=n\frac{y_n(2-nv_\alpha y)-2(1-2y)}{2-nv_\alpha (1-y)}\,.
+\end{equation}
+Thus, if desired, when running the \verbexec|test| code one may add an
+initial guess to $y_p$ or $y_n$ through the parameter
+\verbprm+uniform_sol_guess+. 
+
+
+Similarly, a guess of the independent variables
+$\zeta=[\log_{10}(n_{no}), \log_{10}(n_{po}), \log_{10}(u)]$ that
+determine the solution to the non-uniform system (see Section III of
+SRO \cite{schneider:17} may be added with the parameter
+\verbprm+uniform_sol_guess+.
+
+We have tried our best to implement a method that will find a solution
+over the entire reasonable space in density, temperature, and proton
+fraction. However, convergence cannot be guaranteed and the code may
+fail for some choices of density, temperature, and proton fraction.
+
+Also, in rare cases we have observed that the code returns a solution
+which does solve the systems of equations, but returns a non-physical
+condition.  We have tried to eliminate those from the output and look
+for realistic solutions.  However, this is not always possible and the
+user sohuld be aware that unphysical solutions, though very unlikely,
+may pop up from time to time. This is we advise the user to carefully
+test the resulting tables.
+
+Finally, to avoid underflows/overflows we limit the absolute values of
+some quantities to a maximum of $10^{100}$ and a minimum of
+$10^{-100}$. To the best of our knowledge, this does not affect the
+final solutions. Another option would be to change from double
+precision to quadruple precision arithmetic. However, this would be
+cumbersome and would render the code very slow.
+
+\vspace*{-0.1cm}
+Even if no initial guess is given, the SNA \verbexec+test+ code should
+be able to find solutions for most parametrizations within the limits:
+\begin{itemize}
+ \item $10^{-14}\,\mathrm{fm}^{-3}\lesssim{n}\lesssim 10 \, \mathrm{fm}^{-3}$;
+ \item $10^{-4}\,\mathrm{MeV}\lesssim{T}\lesssim 300\,\mathrm{MeV}$;
+ \item $0.001\lesssim y \lesssim 0.7$.
+\end{itemize}
+The code can become slow at very low temperatures and
+very low densities.
+
+
+% Note that the uniform_sol_guess of dimension 1 and the non_uniform_sol_guess
+% guesses of dimension 3 are initial guesses for the independent
+% variables that solve the uniform and non-uniform system of equations,
+% respectively. The solution to the uniform system depends only on a
+% single independent variable, while the non-uniform system depends on
+% three. The user should refer to the published paper and/or the user
+% guide for details. The guesses are only used if the parameter 'guess'
+% is set to '.true.'. 
+
+
+
+\vspace*{-0.3cm}
+\subsubsection{SNA Table Ranges and Resolution Input File \textcolor{red}{\texttt{input/space.in}}}\label{sssec:SNA_phase_space_in}
+
+
+The \verbexec+main+ executable also takes as input the namelist
+\verbnml+space_list+ contained in
+\verbfile+input/space.in+.  This namelist determines the range and spacing in $\log_{10}n$ (density $n$ given in fm$^{-3}$),
+$\log_{10}T$ (temperature $T$ given in MeV), and proton fraction $y$
+that will be covered by the output table.  The example below should be
+self-explanatory.  Note that there are two methods for determining the
+spacing for each of the three variables and that we commented out the
+superseding option.
+
+{\color{cyan}
+\begin{verbatim}
+&space_list
+yp_min      =  0.00499D0,       ! minimum proton fraction
+yp_max      =  0.66499D0,       ! maximum proton fraction
+steps_in_Yp =  67,              ! steps in Yp every 0.01
+! Yp_spacing = 0.01D0,          ! spacing in Yp 
+! (if used Yp_spacing supersedes option for steps_per_hundredth_in_yp)
+
+log10n_min  = -13.20d0,         ! log10 of minimum density in fm^-3
+log10n_max  =   1.0d0,          ! log10 of maximum density in fm^-3
+steps_per_decade_in_n  =  30,   ! steps per decade in density
+! log10n_spacing = 0.03333333d0,! spacing in log10(n) 
+! (if used log10n_spacing supersedes option for steps_per_decade_in_n)
+
+log10T_min  =  -3.1d0,          ! log10 of minimum density in fm^-3
+log10T_max  =   2.5d0,          ! log10 of maximum density in fm^-3
+steps_per_decade_in_T  = 30,    ! steps per decade in density
+! log10T_spacing = 0.03333333d0,! spacing in log10(T) 
+! (supersedes log10T_spacing option for steps_per_decade_in_n)
+/
+\end{verbatim}}
+
+
+
+\subsection{Output}\label{ssec:SNA_out}
+
+
+Both the \verbexec+test+ and the \verbexec+main+ executables produce
+output with information on the employed Skyrme parametrization. Below
+is a list of output files written to the directory defined by the
+\verbfile+output_directory+ in the \verbnml|TABLE_INPUT| namelist.
+
+
+\begin{itemize}
+ \item \verbfile+Skyrme_coefficients.dat+ contains the Skyrme
+   parametrization used.
+
+ \item \verbfile+Nuclear_Properties.dat+ contains the parameters of 
+   the expansion of the specific nuclear energy around nuclear saturation 
+   density, Equations (44-47) in SRO, the parameters of the symmetry energy 
+   expansion (48-51) in SRO, and information about the effective masses of 
+   nucleons for symmetric nuclear matter at nuclear saturation density, 
+   and alpha particle mass, volume, and binding energy.
+    
+ \item \verbfile+symmetry.dat+ contains the symmetry energy of uniform
+   nuclear matter as a function of density, see Equation (49) of SRO
+   \cite{schneider:17}.
+
+ \item \verbfile+surface_density.dat+ contains $y_i$, $T$ (in MeV), the
+   densities $\log_{10}n_{ni}$, $\log_{10}n_{pi}$, $\log_{10}n_{no}$,
+   and $\log_{10}n_{po}$ which are solutions to Equations (23) and (24) of
+   SRO \cite{schneider:17} and the residue of the four equations.
+
+ \item \verbfile+surface_tension.dat+ uses the density results given
+   in \verbfile+surface_density.dat+ and provides $y_i$, $T$ (in MeV),
+   the parameters $r_n$, $a_n$, and $a_t$ (in fm), which minimize the
+   surface tension, the derivatives of $\sigma(y_i,T)$ w.r.t. $r_n$,
+   $a_n$, and $a_p$, and the surface tension $\sigma(y_i,T)$ in
+   MeV\,fm$^2$. Note that $r_p$ is set to zero by default. $r_t$ and
+   $a_t$ and the surface tension are discussed around Equations (25-28)
+   of SRO~\cite{schneider:17}.
+
+ \item \verbfile+surface_tension_fit.dat+ contains $y_i$, $T$, the
+   normalized surface tension $\sigma(y_i,T)/\sigma_s$, the fitting
+   $\sigma_{\mathrm{fit}}(y_i,T)/\sigma_s$ given by Equations (19) and
+   (20) of SRO~\cite{schneider:17}, and the ratio
+   $\sigma_{\mathrm{fit}}(y_i,T)/\sigma(y_i,T)$.
+
+ \item \verbfile+Surface_fit.dat+ contains the parameters $\sigma_s$,
+   $\lambda$, $q$, and $p$ of the surface fit, Equations (19) and (20)
+   in SRO~\cite{schneider:17}, as well as the surface properties $A_S$
+   and $S_S$ in Equation (53) of SRO~\cite{schneider:17}.
+
+ \item \verbfile+Critical_temperature_fit.dat+ provides the parameters
+   $T_{c0}$, $a_c$, $b_c$, $c_c$, and $d_c$ that fit the critical
+   temperature $T_c(y_i)$ for which two phases of nuclear matter with
+   different densities and proton fractions coexist. See Equation (22) of
+   SRO~\cite{schneider:17}.
+
+\end{itemize}
+
+Note that the files related to the surface fit will only be written if
+explicit calculation of the surface fit takes place, \textit{i.e.}, if
+\verbprm|fit_surface = .true.| in the \verbnml+SURFACE_PROPERTIES+
+namelist.
+
+
+The other output depends on whether \verbexec+test+ or \verbexec+main+
+is run.  If \verbexec+test+ is run, output about the search for
+solution, possible errors found, and ground state of the system, if
+found, is printed to the standard output.
+
+If \verbexec+main+ is run, then an \verb|HDF5| file is output, unless 
+\verbprm|make_hdf5_table = .false.|. 
+
+
+
+
+\subsubsection{Output of \texttt{SNA \textcolor{magenta}{test}}}\label{sssec:SNA_test_out}
+
+
+The test output should be mostly self-explanatory.  However, some
+error messages still need to be implemented.  Units are appropriate
+combinations of MeV and fm unless otherwise stated explicitly.
+
+
+
+\subsubsection{Output of \texttt{SNA \textcolor{magenta}{main}}}\label{sssec:SNA_main_out}
+
+
+The \verbexec+main+ executable creates a directory with the name that
+is specified in the \verbprm+output_directory+ parameter of namelist
+\verbnml+TABLE_INPUT+.
+
+If \texttt{\color{ForestGreen}write\_solutions\_to\_file = .true.} in
+namelist \texttt{\color{cyan}TABLE\_INPUT}, then the code creates two
+subdirectories \verbfile+SOL+ and \verbfile+NO_SOL+.  Although this
+should work smoothly, some Fortran compilers have problems with the
+system calls and are unable to create directories and subdirectories.
+If that is the case, the user will need to create the necessary
+directories manually. 
+
+If \texttt{\color{ForestGreen}write\_solutions\_to\_file = .true.}, in
+the \verbfile+SOL+ directory, a file with the solutions to the uniform
+and non-uniform systems is written for each proton fraction. The
+explanation of the columns of these files is given below.  In the
+\verbfile+NO_SOL+ directory, a file for each proton fraction is
+created and if neither a uniform nor a non-uniform solution is found
+for a particular combinations of proton fraction, density, and
+temperature, their values and possible errors encountered are written
+to the file. The explanation of the columns is given below.
+
+
+The files written in the \verbfile+output_directory/SOL/+ directory have
+17 columns.  They are:
+
+\begin{enumerate}
+ \item[1.--3.] Density (fm$^{-3}$), temperature (MeV), and proton
+   fraction $y$.
+
+ \item[4.] Independent variable $y_p$ ($y_n$) that solves the uniform
+   system if $y<0.50$ (if $y>0.50$). Set to zero if uniform solution
+   not found or not searched for.
+
+ \item[5.--7.] Independent variables $\zeta=[\log_{10}(n_{no}),
+   \log_{10}(n_{po}), \log_{10}(u)]$ that solve the non-uniform
+   system. Densities are assumed to be in fm$^{-3}$. Set to zero if
+   non-uniform solution not found or not searched for.
+
+ \item[8.--9.] Specific free energy in MeV
+   for the uniform and non-uniform systems. Set to
+   $10^{99}$ if solution not found or not searched for.
+
+ \item[10.--11.] Dot product of residue for the equations solved for
+   uniform and non-uniform systems. Set to $10^{10}$ if solution not
+   found or not searched for.
+
+ \item[12.--13.] Number of times tried to search for uniform and
+   non-uniform solutions.
+
+ \item[14.--15.] Logical (T or F) indicating whether uniform and
+   non-uniform solutions were found.
+
+ \item[16.--17.] Logical (T or F) indicating whether uniform and
+   non-uniform solutions were searched for.
+
+\end{enumerate}
+
+
+
+
+The files written in the \verbfile+output_directory/NO_SOL/+ directory
+have 9 columns.  They are:
+
+\begin{enumerate}
+
+\item[1.--3.] Density (fm$^{-3}$), temperature (MeV), and proton
+  fraction $y$.
+
+\item[4.--5.] Dot product of the residue of the equations solved for
+  the uniform and non-uniform systems. Set to $10^{10}$ if solution
+  not found or not searched for.
+
+\item[6.--7.] Logical (T or F) indicating whether uniform and
+  non-uniform solutions were found.
+
+\item[8.--9.] Logical (T or F) indicating whether uniform and
+  non-uniform solutions were searched for.
+
+\end{enumerate}
+
+
+\subsubsection{SNA HDF5 output}\label{sssec:SNA_HDF5}
+
+
+The \verb|HDF5| output file, unless limited by the \verbnml|TABLE_OUTPUT| namelist discussed above, contains information about the following quantities.
+\begin{enumerate}
+ \item Scalar integer \verbprm+pointsrho+. Number of table points in
+   logarithmic density.
+
+ \item Scalar integer \verbprm+pointstemp+. Number of table points in
+   logarithmic temperature.
+
+ \item Scalar integer \verbprm+pointsye+. Number of table points in
+   proton fraction.
+
+ \item 1D Array
+   \verbprm+logn+ with size \verbprm+pointsrho+. Contains the values for
+   $\log_{10}n$, where $n$ is density in fm$^{-3}$.
+
+ \item 1D Array \verbprm+logtemp+ with size
+   \verbprm+pointstemp+. Contains the values for $\log_{10}T$, where
+   $T$ is temperature in MeV.
+
+ \item 1D Array \verbprm+ye+ with size \verbprm+pointsye+. Contains
+   the values for the proton fraction.
+   
+ \item 3D Array \verbprm+p+ with size
+   (\verbprm+pointsrho+,\verbprm+pointstemp+,\verbprm+pointsye+). Note
+   that all 3D arrays described in the following have the same
+   size. Contains the pressure $P$ in units of MeV\,fm$^{-3}$ for each
+   point $(n,T,y)$ in the table.
+
+ \item 3D Array \verbprm+s+. Contains the specific entropy in
+   $k_B$\,baryon$^{-1}$.
+
+ \item 3D Array \verbprm+e+. Contains the specific internal energy in
+   MeV\,baryon$^{-1}$ with respect to the free neutron mass.
+
+ \item 3D Array \verbprm+muh+. Contains $\hat\mu=\mu_n-\mu_p$ in MeV. 
+   Note that $\hat\mu$ includes the neutron--proton mass difference.
+   
+ \item 3D Array \verbprm+mun+. Contains $\mu_p$ in MeV with respect to the
+   free neutron mass.
+
+ \item 3D Array \verbprm+mup+. Contains $\mu_n$ in MeV with respect to the
+   free neutron mass.
+
+ \item 3D Array \verbprm+dpdn+. Contains $dP/dn\vert_{T,y}$ in MeV.  
+
+ \item 3D Array
+   \verbprm+dsdn+. Contains $ds/dn\vert_{T,y}$ in $k_B$\,fm$^3$\,bayon$^{-1}$. 
+
+ \item 3D Array \verbprm+dmudn+. Contains $d\mu_h/dn\vert_{T,y}$ in MeV\,fm$^3$. 
+
+ \item 3D Array \verbprm+dpdT+. Contains $dP/dT\vert_{n,y}$ in fm$^{-3}$.
+
+ \item 3D Array
+   \verbprm+dsdT+. Contains $ds/dT\vert_{n,y}$ in $k_B$\,baryon$^{-1}$\,MeV$^{-1}$.
+
+ \item 3D Array
+   \verbprm+dmudT+. Contains $d\mu_h/dT\vert_{n,y}$. Dimensionless. 
+
+ \item 3D Array \verbprm+dpdy+. Contains $dP/dy\vert_{n,T}$ in MeV\,fm$^{-3}$.
+
+ \item 3D Array \verbprm+dsdy+. Contains $ds/dy\vert_{n,T}$ in  $k_B$\,baryon$^{-1}$.
+
+ \item 3D Array
+   \verbprm+dmudy+. Contains $d\mu_h/dy\vert_{n,T}$ in MeV. 
+
+ \item 3D Array
+   \verbprm+zbar+. Contains the charge number $Z$ of the representative
+   heavy nucleus.
+
+ \item 3D Array
+   \verbprm+abar+. Contains the mass number $A$ of the representative
+   heavy nucleus.
+
+ \item 3D Array
+   \verbprm+xn+. Contains the neutron mass fraction.
+
+ \item 3D Array \verbprm+xp+. Contains the proton mass fraction.
+
+ \item 3D Array \verbprm+xa+. Contains the alpha particle mass fraction.
+
+ \item 3D Array \verbprm+xh+. Contains the heavy nuclei mass fraction.
+
+ \item 3D Array \verbprm+u+. Contains the occupied volume fraction by
+   heavy nuclei $u$. 
+
+ \item 3D Array \verbprm+r+. Contains the occupied generalized radius
+   of heavy nuclei $r$ in fm. 
+
+ \item 3D Array
+   \verbprm+meff_n+. Contains the effective mass of unbound neutrons $m^*_n$ in MeV.
+
+ \item 3D Array \verbprm+meff_p+. Contains the effective mass of
+   unbound protons $m^*_p$ in MeV.
+
+\end{enumerate}
+
+\smallskip
+Note that the \texttt{SNA} code also includes additional datasets in
+the \texttt{HDF5} file that contain the full \texttt{SNA} source code
+and all inputs necessary to reproduce the results stored in the
+\texttt{SNA} EOS table. See Section~\ref{sec:formaline} for details on
+this feature.
+
+
+\section{The Nuclear Statistical Equilibrium Code \texttt{NSE}}\label{sec:NSE}
+
+The \texttt{NSE} code used to compute the EOS of an ensemble of nuclei
+in nuclear statistical equilibrium resides in the directory
+\verbfile|NSE|.
+
+
+The \texttt{NSE} code works by computing the most favorable
+composition of nuclei (the one with the lowest Helmholtz free energy)
+for a user-specified ensemble of nuclei (and nucleons) and their
+masses and partition functions. Details are discussed in the SRO paper
+\cite{schneider:17}. NSE can be computed for a single point (the
+\texttt{\color{magenta} test} case) or for a 3D space of points
+(\texttt{\color{magenta} main} case) in proton fraction $y$,
+temperature $T$, and density $n$.
+
+\subsection{Compiling and Running the \texttt{NSE} Code}\label{ssec:NSE_dep}
+
+Once all dependencies outlined in Section~\ref{sec:req} are installed
+and the \texttt{make.inc} file is set up in the SRO EOS root
+directory, compiling the \verb|NSE| code should be as simple as
+
+
+\begin{verbatim}
+ > cd NSE
+ > make
+\end{verbatim}
+
+
+This will create two executables in the
+\verbfile|NSE| directory: \verbexec|main| and \verbexec|test|.  
+Their inputs and outputs are discussed in Section \ref{ssec:NSE_in}
+and \ref{ssec:NSE_out}, respectively.
+
+\textbf{IMPORTANT:} When solving for the EOS, the code will make use
+of OpenMP parallelization. It will use as many OpenMP threads as
+specified by the system environment variable
+\texttt{OMP\_NUM\_THREADS}. Make sure to check what this is set to and
+adjust it, if you want to use less or more threads. We do not
+recommend using more threads than available physical CPU cores on your
+machine.
+
+We tested the \texttt{NSE} code with various versions of the GNU
+compiler suite and the Intel compiler suite.
+
+
+
+
+
+\subsection{Input}\label{ssec:NSE_in}
+
+
+The \verbexec|main| (\verbexec|test|) executable takes five (four)
+input files.  Three of the input files are the same for both codes --
+from the \texttt{\color{red}NSE} root directory:
+\verbfile|input/list.in|, \verbfile|input/partition.in|, and
+\verbfile|input/isotope_masses.in|.  The \verbexec|main| executable 
+takes two other inputs: the \verbfile|input/output.in|
+and \verbfile|input/space.in| files, which contain,
+respectively, details on the output to be written by the code and the
+space in proton fraction, density, and temperature to be covered by
+the output \texttt{NSE} table.  The \verbexec|test| executable reads
+the \verbfile|input/test.in| file, which contains a single point in
+proton fraction, density, and temperature to compute the NSE EOS.  We
+discuss these input files in detail below.
+
+
+
+
+\subsubsection{The Mass Table and Partition Function Input}
+\label{sssec:mass_table.in}
+
+
+
+The mass table input,
+\verbfile|input/isotopes.in|, contains information about the names of
+available nuclides and their proton, neutron, and mass number, as well
+as their mass excess and binding energies.  \textbf{We advise the user
+  to NOT modify this file.}  Information about the nuclide partition
+functions contained in the \verbfile|input/partition.in| file.
+\textbf{Again, we do NOT recommend the user to modify this file}.  The
+data in both of these files are obtained from the file
+\verbfile+chem/data/isotopes.data+ of the open-source MESA stellar
+evolution code \cite{MESA}, revision r7503, which contains information
+for 7851 nuclides.  The mass table contains 6 columns with nuclide
+properties: a short name descriptor, mass number, proton number
+(charge), neutron number, mass excess w.r.t.\ $^{12}$C, and the nuclear
+binding energy.  The excess mass, binding energies and partition
+function are from the JINA REACLIB library
+\cite{cyburt:10}. Here the binding energies are obtained
+  w.r.t.\ symmetric nuclear matter. However, to be consistent with the
+\verbexec+SNA+ code, we subtract the neutron-proton mass
+difference from the resulting free energies.
+
+
+\subsubsection{Input Nuclides}\label{sssec:NSE_isotopes}
+
+
+To construct the \texttt{NSE} table, one must provide a list of
+nuclides in file
+\verbfile|input/list.in|. This file is actually a symbolic link
+that points to a nuclide list file in the  \verbfile|tables|
+directory (see below).
+
+When making a custom \verbfile|input/list.in| file, an important
+restriction to keep in mind is that the chosen nuclides must be
+present in the
+\verbfile|input/isotopes.in| and \verbfile|input/partition.in| files.
+For obvious reasons, we recommend protons, neutrons, and alpha
+particles to be among the nuclides included when putting together
+\verbfile|input/list.in|.  The \verbfile|input/list.in| file must have
+four columns: the nuclide name, which should match the name in the
+\verbfile|input/isotopes.in| file, its mass number, proton (charge)
+number, and neutron number.  \textbf{Because of the way the code is
+  structured, the nuclide list must be ordered by increasing proton
+  (charge) number first and second by increasing neutron number.}  We
+provide in the
+\verbfile|tables| directory the nuclide lists used in the SRO paper 
+and some other nuclide lists inspired by those used by MESA~\cite{MESA}.
+
+
+
+
+\subsubsection{NSE test input}\label{sssec:NSE_test_in}
+
+
+The \verbexec+test+ executable takes as input the namelist
+\verbnml+input_test_list+, which is part of the
+\verbfile+input/test.in+ file.  This namelist determines the point in
+proton fraction, density, and temperature where to calculate the NSE
+EOS.
+
+{\color{cyan}
+\begin{verbatim}
+&input_test_list
+! point in phase space
+proton_fraction =  30.0D-02, ! proton fraction for test
+temperature     =  1.00D-00, ! temperature in MeV for test
+density         =  1.00D-03, ! density in fm^-3 for test
+/
+\end{verbatim}}
+
+
+
+\subsubsection{NSE Table Ranges and Resolution Input File}\label{sssec:NSE_phase_space_in}
+
+
+As in the \texttt{SNA} code, the \verbexec+main+ \texttt{NSE}
+executable also takes as input a namelist
+\verbnml+space_list+ that is in the file
+\verbfile+input/space.in+ (path relative to the \texttt{NSE} root directory; 
+this file is distinct from its \texttt{SNA} counterpart).  This namelist
+determines the range and spacing in $\log_{10}n$ (density $n$ given in
+fm$^{-3}$), $\log_{10}T$ (temperature $T$ given in MeV), and proton
+fraction $y$ that is covered by the output \texttt{NSE} table. The
+example below should be self-explanatory.  Note that there are two
+methods for determining the spacing for each of the three variables
+and that we comment out the superseding option.  We do not try to
+obtain the NSE EOS at densities larger than nuclear saturation density
+$n_0\simeq0.16\,\mathrm{fm}^{-3}$ since we expect matter to be a
+uniform gas of protons and neutrons there.  In fact, the NSE EOS if
+likely unreliable for densities of $\gtrsim n_0/10$ since exotic
+nuclei dominate in this region and nuclear interactions play an
+important role and are not included in our NSE framework.
+
+
+{\color{cyan}
+\begin{verbatim}
+&space_list
+yp_min      =  0.00499D0,       ! minimum proton fraction
+yp_max      =  0.66499D0,       ! maximum proton fraction
+steps_in_Yp =  67,              ! steps in Yp every 0.01
+! Yp_spacing = 0.01D0,          ! spacing in Yp 
+! (if used Yp_spacing supersedes option for steps_per_hundredth_in_yp)
+
+log10n_min  = -13.20d0,         ! log10 of minimum density in fm^-3
+log10n_max  =  -1.0d0,          ! log10 of maximum density in fm^-3
+steps_per_decade_in_n  =  30,   ! steps per decade in density
+! log10n_spacing = 0.03333333d0,! spacing in log10(n) 
+! (if used log10n_spacing supersedes option for steps_per_decade_in_n)
+
+log10T_min  =  -3.1d0,          ! log10 of minimum density in fm^-3
+log10T_max  =   2.5d0,          ! log10 of maximum density in fm^-3
+steps_per_decade_in_T  = 30,    ! steps per decade in density
+! log10T_spacing = 0.03333333d0,! spacing in log10(T) 
+! (if used log10T_spacing supersedes option for steps_per_decade_in_T)
+/
+\end{verbatim}}
+
+The \verbfile|input/output.in| file contains the \verbnml|TABLE_INPUT|
+namelist. Similarly to the \verbexec+SNA+ case, this namelist contains
+information about the type of output files to write, their names, and
+the directory they are written to. Below is an example of the
+\verbnml|TABLE_INPUT| namelist.
+
+{\color{cyan}
+\begin{verbatim}
+&TABLE_INPUT
+  make_hdf5_table = .true.,
+  write_solutions_to_file = .false., 
+  filename_base   = "NSE_0023",  ! base for HDF5 table name
+  output_directory= "NSE_0023",  ! directory for ascii output files
+/
+\end{verbatim}}
+The logical parameters in the namelist are set by default to the
+values given above and only need to be explicitly set if changed.
+Note that we have chosen the \texttt{0023} in the filename to
+correspond to the default number of NSE nuclides used. Of course,
+larger NSE networks are possible and should be considered.
+
+The \verbprm|write_solutions_to_file| variable determines whether 
+to write the neutron and proton chemical potentials, $\tilde\mu_n$ 
+and $\tilde\mu_p$, respectively, that determine the nuclear 
+statistical equilibrium and other debugging information for each 
+point in density, temperature and proton fraction to an ASCII file. 
+By default it is set to \verbprm|false|. 
+
+
+The parameter \verbprm|make_hdf5_table| sets whether to write an 
+\verb|HDF5| table in the \verbfile|output_directory| directory. 
+The table name starts with \verbprm|filename_base| followed by 
+information about the table resolution in $\log_{10}$(density), 
+$\log_{10}$(temperature), and proton fraction. Next is information on 
+the git revision. If the code to make the table was compiled from a 
+repository with local changes, the short git hash is prepended with a 
+captial ``M''. If the repository is all fully committed, the short git 
+hash has no prefix. Finally, the name contains the date the table was
+generated. For example, a table name could look like 
+this: \verbfile|NSE_0023rho367_temp169_ye67_gitMd089cf6_20170624.h5|.  
+Note that the table is only written after all solutions have been
+computed. Also note that we are including the full source code and all
+inputs needed to generate the table. See Section~\ref{sec:formaline}
+for details on this.
+
+
+The details of the contents (including units) of the \verb|HDF5| output file 
+are discussed in Section~\ref{sssec:NSE_main_out}.
+
+
+\subsection{\texttt{NSE} Output}\label{ssec:NSE_out}
+
+
+\subsubsection{Output of Test}\label{sssec:SNA_test_out}
+
+
+The test output should be mostly self-explanatory.  However, some
+error messages still need to be implemented.  Units are appropriate
+combinations of MeV and fm unless otherwise stated explicitly.
+
+
+\subsubsection{Output of main}\label{sssec:NSE_main_out}
+
+
+The \verbexec+main+ executable creates a directory with the name that
+is specified in the \verbprm+output_directory+ parameter of namelist
+\verbnml+TABLE_INPUT+.
+
+The following applies only if \verbprm|write_solutions_to_file = .true.| in the
+\texttt{\color{cyan}TABLE\_INPUT} namelist:
+
+In the \verbprm+output_directory+, the code creates three
+subdirectories \verbfile+SOL+, \verbfile+NO_SOL+, and
+\verbfile+ERROR+.  Although all of these directories should
+automatically be created by the code, some Fortran compilers have
+problems with the system calls and are unable to create directories
+and subdirectories.  If that is the case, the user will need to create
+the necessary directories manually.
+
+
+In the \verbfile+SOL+ directory, files for each proton fraction computed 
+containing the neutron and proton chemical potentials ($\tilde\mu_n$ and 
+$\tilde\mu_p$) that determine the composition of isotopes given in nuclear 
+statistical equilibrium is given. 
+In the \verbfile+NO_SOL+ directory, a file for each proton fraction is 
+created and if the solution found is not within the desired tolerance. 
+In the \verbfile+ERROR+ directory, a file for each proton fraction is 
+created and an error message is written to the corresponding file if there 
+is a problem solving the system of equations. 
+An explanation of the columns in the files of each of these folders is 
+given below.
+
+
+The files written in the \verbfile+output_directory/SOL/+ directory have
+13 columns.  They are:
+
+\begin{enumerate}
+ \item[1.--3.] Density (fm$^{-3}$), temperature (MeV), and proton
+   fraction $y$.
+ \item[4.--5.] Neutron and proton chemical potentials, 
+   $\tilde\mu_n$ and $\tilde\mu_p$. Set to zero if a solution is not found. 
+ \item[6.] Accuracy of solution defined by $\vert1-x_n-x_p-x_\alpha-x_l-x_h\vert$.
+  \begin{itemize}
+   \item $x_n$ is the mass fraction of neutrons.
+   \item $x_p$ is the mass fraction of protons.
+   \item $x_\alpha$ is the mass fraction of alpha particles. 
+   \item $x_l$ is the mass fraction of light nuclei. 
+         Light nuclei are defined as nuclei with proton number $Z\leq6$,
+         not including neutrons, protons, and alpha particles.
+   \item $x_h$ is the mass fraction of heavy nuclei. Heavy nuclei areas
+         defined as nuclei with proton number $Z>6$.
+  \end{itemize}
+ \item[7.--11.] The mass fractions $x_n$, $x_p$, $x_\alpha$, $x_l$, $x_h$.
+                Set to $10^{-99}$ if lower than that. 
+ \item[12.] Number of calls to the function \texttt{nr\_iterate} that solves
+            the system of equations. 
+ \item[13.] Number of calls to the function \texttt{reorder} that orders
+            nuclei by their abundances. 
+\end{enumerate}
+
+
+The files written in the \verbfile+output_directory/NO_SOL/+ directory
+have the same columns as the files in \verbfile+output_directory/SOL/+.
+The difference is that a line is only written if the solution is not found 
+or not whithin the accepted tolerance, 
+$\vert1-x_n-x_p-x_\alpha-x_l-x_h\vert < 10^{-6}$.
+
+
+The files written in the
+\verbfile+output_directory/ERROR/+ directory have four columns. The
+columns are only written in case the subroutine \texttt{local\_nse} is
+unable to find a combination of nuclides in NSE. The columns are
+
+\begin{enumerate}
+ \item[1.--3.] Density (fm$^{-3}$), temperature (MeV), and proton fraction $y$. 
+ \item[4.] Error type:
+ \begin{itemize}
+  \item 1, if the number of iterations trying to compute the solution
+    is larger than the allowed maximum, 600.
+  \item 2, if the Jacobian of the system of equations is singular. 
+ \end{itemize}
+\end{enumerate}
+
+
+\subsubsection{NSE HDF5 output}\label{sssec:NSE_HDF5}
+
+The \verb|HDF5| output file contains the following datasets:
+
+\begin{enumerate}
+ \item Scalar integer \verbprm+pointsrho+. Number of table points in
+   logarithmic density.
+
+ \item Scalar integer \verbprm+pointstemp+. Number of table points in
+   logarithmic temperature.
+
+ \item Scalar integer \verbprm+pointsye+. Number of table points in
+   proton fraction.
+
+ \item 1D Array
+   \verbprm+logn+ with size \verbprm+pointsrho+. Contains the values for
+   $\log_{10}n$, where $n$ is density in fm$^{-3}$.
+
+ \item 1D Array \verbprm+logtemp+ with size
+   \verbprm+pointstemp+. Contains the values for $\log_{10}T$, where
+   $T$ is temperature in MeV.
+
+ \item 1D Array \verbprm+ye+ with size \verbprm+pointsye+. Contains
+   the values for the proton fraction.
+   
+
+ \item 3D Array \verbprm+p+ with size
+   (\verbprm+pointsrho+,\verbprm+pointstemp+,\verbprm+pointsye+). Note
+   that all 3D arrays described in the following have the same
+   size. Contains the pressure $P$ in units of MeV\,fm$^{-3}$ for each
+   point $(n,T,y)$ in the table.
+
+ \item 3D Array \verbprm+s+. Contains the specific entropy in
+   $k_B$\,baryon$^{-1}$.
+
+ \item 3D Array \verbprm+e+. Contains the specific internal energy in
+   MeV\,baryon$^{-1}$.
+
+ \item 3D Array \verbprm+muh+. Contains $\hat\mu=\mu_n-\mu_p$ in MeV. 
+   Note that here $\mu_n$ and $\mu_p$ are obtained with respect to the neutron vacuum mass. 
+   
+ \item 3D Array \verbprm+mun+. Contains $\mu_p$ in MeV. 
+
+ \item 3D Array \verbprm+mup+. Contains $\mu_n$ in MeV.
+
+ \item 3D Array \verbprm+dpdn+. Contains $dP/dn\vert_{T,y}$ in MeV.  
+
+ \item 3D Array \verbprm+dsdn+. Contains $ds/dn\vert_{T,y}$ in $k_B$\,fm$^3$\,bayon$^{-1}$. 
+
+ \item 3D Array \verbprm+dmudn+. Contains $d\mu_h/dn\vert_{T,y}$ in MeV\,fm$^3$. 
+
+ \item 3D Array \verbprm+dpdT+. Contains $dP/dT\vert_{n,y}$ in fm$^{-3}$.
+
+ \item 3D Array \verbprm+dsdT+. 
+   Contains $ds/dT\vert_{n,y}$ in $k_B$\,baryon$^{-1}$\,MeV$^{-1}$. 
+
+ \item 3D Array \verbprm+dmudT+. Contains $d\mu_h/dT\vert_{n,y}$. Dimensionless. 
+
+ \item 3D Array \verbprm+dpdy+. Contains $dP/dy\vert_{n,T}$ in MeV\,fm$^{-3}$ 
+
+ \item 3D Array \verbprm+dsdy+. Contains $ds/dy\vert_{n,T}$ in  $k_B$\,baryon$^{-1}$. 
+
+ \item 3D Array \verbprm+dmudy+. Contains $d\mu_h/dy\vert_{n,T}$ in MeV. 
+
+ \item 3D Array \verbprm+xn+. Contains the neutron mass fraction. 
+
+ \item 3D Array \verbprm+xp+. Contains the proton mass fraction.
+
+ \item 3D Array \verbprm+xa+. Contains the alpha particle mass fraction.
+
+ \item 3D Array \verbprm+xh+. Contains the heavy nuclei mass fraction.
+
+ \item 3D Array \verbprm+xl+. Contains the heavy nuclei mass fraction.
+
+ \item 3D Array \verbprm+zh+. Contains the charge number $Z_h$ 
+   averaged over the present heavy nuclei.
+
+ \item 3D Array \verbprm+ah+. Contains the mass number $A_h$ 
+   averaged over the present heavy nuclei.
+
+ \item 3D Array \verbprm+zl+. Contains the charge number $Z_l$ 
+   averaged over the present light nuclei.
+
+ \item 3D Array \verbprm+al+. Contains the mass number $A_l$ 
+   averaged over the present light nuclei.
+
+\end{enumerate}
+
+\smallskip
+Note that the \texttt{NSE} code also includes additional datasets in
+the \texttt{HDF5} file that contain the full \texttt{NSE} source code
+and all inputs necessary to reproduce the results stored in the
+\texttt{NSE} EOS table. See Section~\ref{sec:formaline} for details on
+this feature.
+
+
+\section{The Code to Merge Tables: \texttt{MERGE}}
+\label{sec:merge}
+
+
+The \texttt{MERGE} code (residing in the \texttt{MERGE} subdirectory) 
+is used to combine the HDF5 tables output by the \texttt{SNA} and 
+\texttt{NSE} codes into a new table using the procedure described
+in Section VII.A. of SRO~\cite{schneider:17}. The \texttt{MERGE} code
+also adds photon, electron, and positron contributions to the EOS.
+
+
+\subsection{Compiling and Running the \texttt{MERGE} Code}
+
+
+Make sure your system satisfies the requirements outline in
+\S\ref{sec:req} and that your \texttt{make.inc} file is set up
+correctly. Given that, compiling the \verb|MERGE| code should now be
+as simple as typing in your terminal from the root directory of the
+SRO EOS:
+
+\begin{verbatim}
+ > cd MERGE
+ > make
+\end{verbatim}
+
+
+This will create a single executable in the \verbfile|MERGE| 
+directory called \verbexec|merge_eos|.  Its input and output are
+discussed in Sections \ref{ssec:MERGE_in} and \ref{ssec:MERGE_out},
+respectively. 
+
+
+\textbf{IMPORTANT:} When creating the combined EOS table, the code
+will make use of OpenMP parallelization. It will use as many OpenMP
+threads as specified by the system environment variable
+\texttt{OMP\_NUM\_THREADS}. Make sure to check what this is set to and
+adjust it, if you want to use less or more threads. We do not
+recommend using more threads than available physical CPU cores on your
+machine.
+
+
+\subsection{Input}
+\label{ssec:MERGE_in}
+
+
+The \texttt{\textcolor{magenta}{merge\_eos}} executable takes three input 
+files, \verbfile|input/tables.in|, \verbfile|input/space.in|, and 
+\verbfile|input/transition.in|. They are discussed next.
+
+
+\subsubsection{The \texttt{\textcolor{magenta}{input/tables.in}} file}
+\label{sssec:Merge_tables}
+
+\verbfile|input/tables.in| contains one namelist, \verbnml|tables|.
+An example is given below. 
+
+
+{\color{cyan}
+\begin{verbatim}
+&tables
+merge_base = 'SKRA_0023',
+sna_eos = '../SNA/EOS/SKRA/SKRA_rho427_temp169_ye67_gitMd089cf6_20170624.h5',
+nse_eos = '../NSE/NSE_0023/NSE_0023_rho367_temp169_ye67_gitMd089cf6_20170624.h5',
+only_sna = .FALSE.,
+only_nse = .FALSE.,
+/
+\end{verbatim}}
+
+This namelist \verbnml|tables| contains five parameters.  Three
+parameters are character strings: \verbprm+merge_base+ is a base for the 
+file name of the final table (we recommend including the Skyrme 
+parametrization and the number of NSE nuclides [if any]),
+\verbprm+sna_eos+ is the path to the SNA table,
+\verbprm+nse_eos+ is the path to the NSE table.  
+
+The two remaining parameters are logical,
+\verbprm+only_sna+ and \verbprm+only_nse+ determine whether the final
+HDF5 table is obtained only in the SNA or only in the NSE
+approximation.  Note that both options cannot be set to
+\texttt{\textcolor{ForestGreen}{.true.}} simultaneously.
+
+Note that in the above case, the resulting output table will be named
+\verbfile|SKRA_0023_rho415_temp163_ye66_gitMd089cf6_20170624.h5|. Note
+that the \texttt{M} behind \texttt{git} indicates that the table was
+generated from a not fully committed git repository. The 7 following
+characters are the short git hash. The final set of numbers is the date
+the table was created at in \texttt{YYYY-MM-DD} format.
+
+
+
+
+\subsubsection{The \texttt{\textcolor{magenta}{input/space.in}} file}
+\label{sssec:MERGE_phase}
+
+
+As the \verb+SNA+ and \verb+NSE+ codes, the \verb+MERGE+ code also
+takes as input a file named
+\verbfile|input/space.in|.  This file has a namelist
+\verbnml+space_list+ that specifies the ranges and resolutions in
+density, temperature, and proton fraction for the final merged table.
+An example is shown below.
+
+{\color{cyan}
+\begin{verbatim}
+&space_list
+yp_min      =  0.005D0,       ! minimum proton fraction
+yp_max      =  0.655D0,       ! maximum proton fraction
+steps_in_Yp =  66,              ! steps in Yp every 0.01
+! Yp_spacing = 0.01D0,          ! spacing in Yp 
+! (if used Yp_spacing supersedes option for steps_per_hundredth_in_yp)
+
+log10n_min  = -13.0d0,          ! log10 of minimum density in fm^-3
+log10n_max  =   0.8d0,          ! log10 of maximum density in fm^-3
+steps_per_decade_in_n  =  30,   ! steps per decade in density
+! log10n_spacing = 0.03333333d0,! spacing in log10(n) 
+! (if used log10n_spacing supersedes option for steps_per_decade_in_n)
+
+log10T_min  =  -3.0d0,          ! log10 of minimum density in fm^-3
+log10T_max  =   2.4d0,          ! log10 of maximum density in fm^-3
+steps_per_decade_in_T  = 30,    ! steps per decade in density
+! log10T_spacing = 0.03333333d0,! spacing in log10(T) 
+! (supersedes log10T_spacing option for steps_per_decade_in_n)
+/
+\end{verbatim}}
+
+Before getting into the details, we want to point out the following:
+
+\medskip
+\begin{framed}\textbf{IMPORTANT:} 
+  The \texttt{MERGE} code interpolates linearly in $\log_{10} n$,
+  $\log_{10} T$ and $y$ to fill points that are not exactly aligned
+  with entries in the SNA and NSE tables. Because of this, great care
+  must be taken to set up density, temperature, and proton fraction
+  grids for SNA, NSE, and merged tables. We recommend to \emph{always}
+  make SNA and NSE tables that are higher resolution than the desired
+  resolution for the final merged table. For the merged tables we make
+  available at \url{https://stellarcollapse.org/SROEOS}, we used SNA
+  and NSE tables that have twice the resolution of the merged tables.
+\end{framed}
+
+While in the \verb+SNA+ and \verb+NSE+ codes the specified ranges are
+limited by physical significance and computational limitations, for
+the \verb+MERGE+ code the ranges are limited by the ranges of the SNA
+and NSE tables being merged.
+
+If the option \verbprm+only_sna+ (\verbprm+only_nse+) is set to
+\texttt{\textcolor{ForestGreen}{.true.}}, then the space in density,
+temperature, and proton fraction space given in the namelist
+\verbnml+space_list+ for the \texttt{MERGE} code should be completely inside
+the space used by the \verbnml+space_list+ namelist used to generate
+the SNA (NSE) table.
+
+In the standard case that SNA and NSE tables are merged, the range
+requirements change slightly:
+
+\begin{enumerate}[label=(\arabic*)]
+
+  \item Our merging procedure is only a function of density. Hence,
+    \verbprm+yp_min+ and \verbprm+log10T_min+ in \verb+MERGE+ should
+    be larger than or equal to the largest value of these parameters
+    used for the SNA and/or NSE tables.
+
+\item Similarly, the parameters \verbprm+yp_max+ and
+  \verbprm+log10T_max+ used in the \verb+MERGE+ code should be smaller than or equal to the smallest value of these parameters
+  used for the SNA and/or NSE tables.
+
+\item We always assume that the NSE table is at a lower density than
+  the SNA table. Hence, the requirements for the density are such that
+  \verbprm+log10n_min+ for \verb+MERGE+ is larger than or equal to the value of that parameter
+  used to generate the NSE table. Similarly,
+  \verbprm+log10n_max+ used for \verb+MERGE+ should be smaller than or equal to the value of this parameter
+  used to generate the SNA table.
+
+\end{enumerate}
+
+
+We discuss in Section \ref{sssec:Merge_transition} how the maximum
+density of the NSE table and minimum density in the SNA table are
+limited by the transition density, its width, and the merge tolerance.
+
+
+\subsubsection{The \texttt{\textcolor{magenta}{input/transition.in}} file}
+\label{sssec:Merge_transition}
+
+The file
+\verbfile+input/transition.in+ contains a namelist \verbnml+transition+ that specifies
+the transition density $n_t$ from SNA to NSE and the transition width
+$n_\delta$, see Section VII.A.\ of SRO~\cite{schneider:17}. We also
+define a tolerance $\epsilon_t$ used for the merge function that will
+be discussed in the following.  An example of the \verbnml+transition+
+namelist is shown below.
+
+
+{\color{cyan}
+\begin{verbatim}
+&transition
+  n_transition = -4.00d0,   ! Log10(transition density in fm^-3)
+  n_delta      =  0.33d0,   ! transition thickness parameter
+  n_tolerance  =  1.d-04,   ! tolerance in transition function
+/
+\end{verbatim}}
+
+
+The function we use to merge the SNA and NSE Helmholtz free energies,
+\begin{equation}
+F_{\textrm{MIX}}=\chi(n) F_{\textrm{SNA}} + [1-\chi(n)] F_{\textrm{NSE}}\,,
+\end{equation}
+depends on the function
+\begin{equation}
+ \chi(n) = \frac{1}{2}\left[1+\tanh\left(\frac{\log_{10}(n)-\log_{10}(n_t)}{n_\delta}\right)\right]\,.
+\end{equation}
+Since $\chi(n)$ only reaches 0 or 1 asymptotically.
+Hence, to speed up the \verb+MERGE+ code and avoid having to determine 
+the SNA and NSE EOS contributions in regions where they are very small, 
+we limit the range to compute $F_{\textrm{MIX}}$ to densities $n_-<n<n_+$
+where 
+\begin{equation}
+ \log_{10}n_\pm = n_t \mp n_\delta \tan^{-1}\left(2\epsilon_t-1\right)\,.
+\end{equation}
+Thus, when $\chi(n)\leq\epsilon_t$ the EOS is only given by the NSE EOS, 
+while if $\chi(n)\geq1-\epsilon_t$ the EOS is given by the SNA EOS. 
+
+
+Given these constraints, when merging an SNA with an NSE EOS, the
+choices of $n_t$, $n_\delta$, and $\epsilon_t$ should be such that
+$\log_{10}n_+<$
+\verbprm+log10n_max+ for NSE table and $\log_{10}n_->$ \verbprm+log10n_min+
+for the SNA table.  Even though the \verb+MERGE+ code does warn the
+user of any issues with the parameters chosen in the
+\verbnml+transition+ namelist, it is up to the user to chose
+transition parameters that satisfy the constraints discussed.  We
+refer the user to Section VII.A.\ of SRO~\cite{schneider:17} and
+recommend that the user carefully test the effects on their
+application problem of variations of the above transition parameters.
+
+
+
+\subsection{Output}
+\label{ssec:MERGE_out}
+
+The \verbexec+merge_eos+ executable creates an HDF5 table that
+combines the \verb+SNA+ and \verb+NSE+ tables with the electron and
+photon EOSs. The units now are, in most cases, in cgs units. The
+quantities output in the final table are listed below.
+
+\begin{enumerate}
+ \item Scalar integer \verbprm+pointsrho+. Number of table points in
+   logarithmic density. 
+
+ \item Scalar integer \verbprm+pointstemp+. Number of table points in
+   logarithmic temperature. 
+
+ \item Scalar integer \verbprm+pointsye+. Number of table points in
+   proton fraction. 
+
+ \item 1D Array
+   \verbprm+logrho+ with size \verbprm+pointsrho+. Contains the values
+   for $\log_{10}\rho$, where $\rho$ is the baryon density in
+   g\,cm$^{-3}$.  The single baryon rest mass is the free neutron
+   mass. 
+   
+ \item 1D Array \verbprm+logtemp+ with size
+   \verbprm+pointstemp+. Contains the values for $\log_{10}T$, where
+   $T$ is temperature in MeV. 
+
+ \item 1D Array \verbprm+ye+ with size \verbprm+pointsye+. Contains
+   the values for the proton fraction.
+   
+ \item 3D Array \verbprm+logpress+ with size
+   (\verbprm+pointsrho+,\verbprm+pointstemp+,\verbprm+pointsye+). 
+   Contains $\log_{10}P$ for each point $(\rho,T,y)$ in the table
+   where $P$ is the pressure in units of dyne\,cm$^{-2}$. Note that 
+   all 3D arrays described in the following have the same size. 
+   
+ \item 3D Array \verbprm+entropy+. Contains the specific entropy in
+   $k_B$\,baryon$^{-1}$. 
+
+ \item 3D Array
+   \verbprm+logenergy+. Contains $\log_{10}(\epsilon+\epsilon_0)$
+   where $\epsilon$ is the specific internal energy in erg\,g$^{-1}$
+   with respect to the free neutron mass and
+   $\epsilon_0=20$\,MeV$=1.91313\times10^{19}$\,erg\,g$^{-1}$ is an
+   energy shift set to guarantee $\epsilon+\epsilon_0>0$.
+
+ \item Scalar integer \verbprm+energy_shift+. Contains the energy shift
+   $\epsilon_0=20$\,MeV$=1.91313 \times 10^{19}$\,erg\,g$^{-1}$ in cgs units.
+   
+ \item 3D Array \verbprm+muhat+. Contains $\hat\mu=\mu_n-\mu_p$ in MeV. 
+   Note that $\hat\mu$ includes the neutron--proton mass difference. 
+   
+ \item 3D Array \verbprm+mu_n+. Contains the neutron chemical potential $\mu_n$ 
+   in MeV with respect to the free neutron mass.
+
+ \item 3D Array \verbprm+mu_p+. Contains the proton chemical potential $\mu_p$ 
+   in MeV with respect to the free neutron mass.
+   
+ \item 3D Array \verbprm+mu_e+. Contains the electron chemical potential $\mu_e$ 
+   in MeV including the electron rest mass. 
+   
+ \item 3D Array \verbprm+munu+. Contains the neutrino chemical potential 
+   $\mu_\nu=\mu_n-\mu_p+\mu_e$ in MeV. 
+   
+ \item 3D Array \verbprm+dedt+. Contains $d\epsilon/dT\vert_{\rho,y}$ in units of
+   erg\,g$^{-1}$\,K$^{-1}$. 
+
+ \item 3D Array \verbprm+dpdrhoe+. Contains $dP/d\rho\vert_{\epsilon,y}$ in units of
+   cm$^2$\,s$^{-2}$.
+
+  \item 3D Array \verbprm+dpderho+. Contains $dP/d\epsilon\vert_{\rho,y}$ in units of
+    g\,cm$^{-3}$.
+   
+ \item 3D Array \verbprm+gamma+. Contains the dimensionless adiabatic index 
+   $\Gamma=d\log P/d\log \rho|_s$.
+ 
+ \item 3D Array \verbprm+cs2+. Contains the speed of sound squared in units of 
+   cm$^2$\,s$^{-2}$.
+ 
+ \item 3D Array \verbprm+zbar+. Contains the average charge number $Z_h$ of 
+   heavy nuclei. For the NSE EOS only isotopes with $Z>6$ are considered ``heavy''.
+   See the discussion in Section \ref{sssec:NSE_main_out}.
+
+ \item 3D Array \verbprm+abar+. Contains the average mass number $A_h$ of 
+   heavy nuclei. For the NSE EOS only isotopes with $Z>6$ are considered ``heavy''.
+   See the discussion in Section \ref{sssec:NSE_main_out}.
+
+ \item 3D Array \verbprm+zlbar+. Contains the average charge number $Z_l$ of 
+   light nuclei. For the NSE EOS only isotopes with $Z\leq6$ excluding protons, 
+   neutrons, and alpha particles are considered ``light''. 
+   See the discussion in Section \ref{sssec:NSE_main_out}. 
+   
+ \item 3D Array \verbprm+albar+. Contains the average charge number $A_l$ of 
+   light nuclei. For the NSE EOS only isotopes with $Z\leq6$ excluding protons, 
+   neutrons, and alpha particles are considered ``light''. 
+   See the discussion in Section \ref{sssec:NSE_main_out}. 
+   
+ \item 3D Array \verbprm+xn+. Contains the neutron mass fraction. 
+
+ \item 3D Array \verbprm+xp+. Contains the proton mass fraction. 
+
+ \item 3D Array \verbprm+xa+. Contains the alpha particle mass fraction. 
+
+ \item 3D Array \verbprm+xh+. Contains the heavy nuclei mass fraction. 
+ 
+ \item 3D Array \verbprm+xl+. Contains the light nuclei mass fraction. 
+
+ \item 3D Array \verbprm+u+. Contains the occupied volume fraction by
+   heavy nuclei $u$. Note that as of now we do not use an excluded volume for 
+   the nuclei in the NSE EOS and, thus, its contribution is zero. 
+
+ \item 3D Array \verbprm+r+. Contains the occupied generalized radius
+   of heavy nuclei $r$ in fm. Set to zero for the NSE EOS. 
+
+ \item 3D Array \verbprm+meff_n+. Contains the effective mass of unbound 
+   neutrons $m^*_n$ in MeV. Set to zero for the NSE EOS. 
+
+ \item 3D Array \verbprm+meff_p+. Contains the effective mass of
+   unbound protons $m^*_p$ in MeV. Set to zero for the NSE EOS. 
+
+\end{enumerate}
+
+\smallskip
+Note that the \texttt{MERGE} code also includes additional datasets in
+the \texttt{HDF5} file that contain the full \texttt{MERGE} source
+code and all inputs necessary to reproduce the results stored in the
+merged EOS table. It also includes all source code and inputs needed
+to reproduce the NSE and SNA parts of the EOS. See
+Section~\ref{sec:formaline} for details on this feature.
+
+
+\section{EOS Driver and Interpolation Codes}
+
+The HDF5 EOS tables generated by the SRO EOS code use the same overall
+format and the same physical units for thermodynamic quantities as the
+legacy EOS tables available from
+\url{https://stellarcollpase.org/equationofstate} in the format
+originally chosen by O'Connor \& Ott (2010,
+\cite{oconnor:10}). Routines that can handle the legacy EOS tables
+will be able to handle SRO tables.
+
+That said, a few caveats need to be kept in mind:
+
+\begin{enumerate}[label={(\arabic*)}]
+\item The SRO EOS provides additional variables that are not in the
+  legacy O'Connor \& Ott tables (see
+  Section~\ref{ssec:MERGE_out}). Readers and interpolation routines
+  need adjustment in order to be able to provide these additional
+  variables.
+  
+\item The legacy O'Connor \& Ott tables include the speed of sound
+  without relativistic corrections. However, the new SRO EOS tables
+  include it with these corrections. SRO tables include an integer
+  flag called \texttt{have\_rel\_cs2} in the HDF5 file that, if set to
+  \texttt{1} (as is the default for SRO tables), indicates that the
+  speed of sound is already relativistic and does not need to be
+  corrected by the application code. The legacy tables do not have
+  such a dataset, so application code can judge from its absence that
+  the speed of sound needs correction.
+
+  Specifically, we are talking about the following:
+
+  \begin{equation}
+    c_s^2 = \frac{c^2}{h} \frac{dP}{d\rho}\bigg|_s\,\,,
+   \end{equation}
+  with
+  $h = c^2 + \epsilon + p/\rho$ and $\epsilon$ being the specific
+  internal energy and $c$ being the speed of light.
+
+% \item three
+\end{enumerate}
+
+
+We provide two different example codes for using SRO EOS tables. They
+implement linear interpolation (and extrapolation) and root finding
+for inverting $\epsilon(\rho,T,Y_e)$ to find the temperature at fixed
+$\rho, Y_e$ after the update of the internal energy by the
+(radiation-)hydrodynamics scheme.
+
+\subsection{\texttt{Fortran 90} Interface/Driver/Interpolator}
+
+
+This code is written in \texttt{Fortran 90} and is a somewhat updated
+version of the code provided at
+\url{https://stellarcollapse.org/equationofstate}.
+
+The \texttt{Fortran 90} code is available as open source via a
+\texttt{git} repository hosted on \texttt{bitbucket.org}. To obtain
+the code, execute
+
+\noindent \texttt{git clone https://bitbucket.org/zelmani/eosdriverfortran}
+
+We do not recommend using the \texttt{Fortran 90} code in simulations.
+Much of it dates back more than a decade. It is inefficient and a
+display of rather poor software engineering. (But it works).
+
+\textbf{Note that the current versions of this EOS
+  interface/driver/interpolation implementation supports handling the
+  relativistic speed of sound corrections as described in the above.}
+
+
+\subsection{C/C++ Interface/Driver/Interpolator}
+
+For high-performance applications, we recommend the more recent and much
+better designed C/C++ routines available at
+
+
+\noindent \texttt{git clone https://bitbucket.org/zelmani/eosdrivercxx}
+
+These routines have been optimized for speed (including vectorization)
+and perform up to a factor of three faster than the legacy
+\texttt{Fortran 90} routines.
+
+\textbf{Note that the current versions of this EOS
+  interface/driver/interpolation implementation supports handling the
+  relativistic speed of sound corrections as described in the above.}
+
+\section{Code and Data Provenance: \texttt{Formaline}}
+\label{sec:formaline}
+
+Provenance is a word used in computational science (and in some other
+research areas). It describes the full history of a (computational)
+scientific result. \textbf{Knowing the provenance of a simulation
+  result or dataset makes it fully reproducible}. The provenance of a
+calculation does not only include the released open-source code, but
+also the full information on the exact source code that was used,
+perhaps even the way it was compiled and where it was run, the
+parameters that were set for the calculation, and all initial
+conditions and other ingredients that were used in whatever form (and
+also their respective provenances).
+
+Historically, EOS tables for core-collapse supernova and neutron star
+merger simulations were stored in proprietary (binary) formats that
+did not provide the user with information on the table format
+and on how the table was generated, which code and parameters were
+used. This made it often impossible to reproduce how a given table was
+generated and, in the worst case, made it impossible to use the table
+if the format was no longer known. \texttt{HDF5} solves the latter
+problem, but by itself does not provide information on how the table
+was generated.
+
+
+The SRO EOS code uses the \texttt{Formaline} approach to boundle
+source code and input parameters with its output. \texttt{Formaline}
+was pioneered by Erik Schnetter for the Cactus Computational Toolkit
+(\url{http://www.cactuscode.org}). In its original form,
+\texttt{Formaline} stored a \texttt{tar.gz} file of the Cactus source
+code in the Cactus executable. Upon execution, the \texttt{tar.gz}
+file is written to the output directory. We have extended this concept
+to include the SRO source code and all input files in \texttt{HDF5}
+SRO EOS tables.
+
+\subsection{\texttt{Formaline}-preserved Code and Inputs in \texttt{HDF5} Tables.}
+
+\texttt{SNA} tables contain the \texttt{HDF5} datasets
+\begin{itemize}
+\item \texttt{SNA-skyrme.in} -- the \texttt{SNA} Skyrme input file \texttt{\color{red}input/skyrme.in}, discussed in Section~\ref{sssec:skyrme.in}.
+\item \texttt{SNA-space.in} -- the \texttt{SNA} table ranges and resolution input file \texttt{\color{red}input/space.in}, discussed in Section~\ref{sssec:SNA_phase_space_in}.
+\item \texttt{SNA-src.tar.gz} -- the complete \texttt{SNA} source
+  tree, \texttt{make.inc}, Makefile, and git hash.
+\end{itemize}
+
+\texttt{NSE} tables contain the \texttt{HDF5} datasets
+\begin{itemize}
+  
+\item \texttt{NSE-isotope-list.in} -- the list of isotopes used for
+  the \texttt{NSE} table, file \texttt{\color{red}input/list.in}, discussed in Section~\ref{sssec:NSE_isotopes}.
+\item \texttt{NSE-isotope-properties.in} -- isotope data table, file \texttt{\color{red}input/isotopes.in}, discussed in Section~\ref{sssec:mass_table.in}.
+\item \texttt{NSE-output-list.in} -- the \texttt{NSE} table output namelist file, \texttt{\color{red}input/output.in}, discussed in Section~\ref{sssec:NSE_phase_space_in}     
+\item \texttt{NSE-partition.in} -- -- isotope partition function data table, file \texttt{\color{red}input/partition.in}, discussed in Section~\ref{sssec:mass_table.in}.
+\item \texttt{NSE-space.in} -- the \texttt{NSE} table ranges and resolution input file \texttt{\color{red}input/space.in}, discussed in Section~\ref{sssec:NSE_phase_space_in}.
+\item \texttt{NSE-src.tar.gz} -- the complete \texttt{NSE} source tree, \texttt{make.inc}, Makefile, and git hash.
+\end{itemize}
+
+The \texttt{MERGE} code (see Section~\ref{sec:merge}) generates the
+final EOS tables. It copies the above datasets from the input
+\texttt{SNA} and/or \texttt{NSE} tables and places them in the output
+\texttt{HDF5} table. It adds the following datasets specific to the \texttt{MERGE} code:
+\begin{itemize}
+
+\item \texttt{MERGE-tables.in} -- \texttt{MERGE} table output details and paths to \texttt{SNA} and \texttt{NSE} tables being merged, file \texttt{\color{red}input/tables.in}, discussed in Section~\ref{sssec:Merge_tables}. 
+\item \texttt{MERGE-space.in} --  the \texttt{MERGE} table ranges and resolution input file \texttt{\color{red}input/space.in}, discussed in Section~\ref{sssec:MERGE_phase}.
+\item \texttt{MERGE-transition.in} -- transition parameters used to merge the \texttt{SNA} and \texttt{NSE} tables, file \texttt{\color{red}input/transition.in}, discussed in Section~\ref{sssec:Merge_transition}. 
+\item \texttt{MERGE-src.tar.gz} -- the complete \texttt{MERGE} source tree, \texttt{make.inc}, Makefile, and git hash.
+
+\end{itemize}
+
+
+\subsection{Extracting \texttt{Formaline}-preserved Information}
+
+The SRO EOS comes with a simple Formaline extraction code written in
+C++. It resides in the \texttt{\color{red}formaline\_extract} directory
+in the EOS root directory and uses the EOS-wide \texttt{make.inc}.
+
+\textbf{Compiling.}\hspace*{1em} Go into
+\texttt{\color{red}formaline\_extract} and type \texttt{make}. This
+creates the exectuable \texttt{\color{magenta}extract\_from\_h5}.
+
+
+\textbf{Usage.}\hspace*{1em} It's as simple as it gets:
+
+\texttt{./extract\_from\_h5 [HDF5 filename] [Dataset Name]}
+
+Recall that you can always use \texttt{h5ls} to learn about the
+contents of an \texttt{HDF5} file.
+
+
+
+\newpage
+\bibliographystyle{unsrt}
+\bibliography{User_Guide}
+
+\end{document}
+
