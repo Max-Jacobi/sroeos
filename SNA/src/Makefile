@@ -113,9 +113,9 @@ dummy:
 	@ echo "\nUsing definitions from make.inc \n"
 
 version:
-	@ ((echo -n "character(80) :: git_version  = '";git rev-parse --short HEAD; echo "'") | tr -d '\n'; echo; \
-	(echo -n "character(80) :: version_date = '";date        ; echo "'") | tr -d '\n'; echo;  \
-	(echo -n "integer       :: nchanged = ";git status --short -uno|wc -l) |tr -d '\n'; echo ) > version.inc
+	@ ((echo  "character(80) :: git_version  = '";git rev-parse --short HEAD; echo "'") | tr -d '\n'; echo; \
+	(echo  "character(80) :: version_date = '";date        ; echo "'") | tr -d '\n'; echo;  \
+	(echo  "integer       :: nchanged = ";git status --short -uno|wc -l) |tr -d '\n'; echo ) > version.inc
 
 
 test: dummy version
