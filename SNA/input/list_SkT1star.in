@@ -1,0 +1,69 @@
+&TABLE_INPUT
+!
+! Set table file name base
+!
+  make_hdf5_table = .true.,
+  write_solutions_to_file = .true.
+  filename_base   = "SkT1",       ! base for HDF5 table names
+  output_directory= "EOS_SkT1",   ! directory for ascii output files
+/
+
+&SKYRME_TYPE
+!
+! Skyrme parametrization type
+!  0 - Standard Skyrme
+!  1 - Simplified Skyrme
+!
+  Skyrme_parametrization_type  = 0,
+  non_local_terms              = 1,
+! Default constants: 0 uses exp constraints for m_n, m_p, m_alpha, b_alpha
+!                    1 uses L&S values for m_n, m_p, m_alpha, b_alpha
+  Use_default_constants        = 0,
+  High_density_stiffening      = .true., ! (default is .false.)
+/
+
+&SKYRME_COEFFICIENTS
+!
+! Parametrization for general Skyrme parametrization
+! Nuclear matter properties are obtained according to Phys. Rep. 411 325 (2005)
+!
+  Coeff_t0            = -1794.00d0,
+  Coeff_t1            =   298.00d0,
+  Coeff_t2            =  -298.00d0,
+  Coeff_t3            = 12812.00d0,
+  Coeff_x0            =     0.154d0,
+  Coeff_x1            =    -0.5d0,
+  Coeff_x2            =    -0.5d0,
+  Coeff_x3            =     0.089d0,
+  Coeff_sigma         =  0.33333333333d0,
+/
+
+&SURFACE_PROPERTIES
+!
+! Determine whether surface fitting should be calculated explicitly
+!  or use pre-calculated fit values.
+!  Pre-calculated values must be given in this list if fit_surface = .true.
+!  For Skyrme_parametrization_type  = 1 
+!  must set fit_surface = .true.
+!
+  fit_surface    = .false.  ! If true  calculate surface properties and fit
+                            ! If dalse use values below
+  Surface_sigma  =   1.089707609099D+00,  ! Surface tension of symmetric nuclear matter (MeV fm^-3)
+  Surface_q      =   1.606378632510D+01,  ! factor q of SIGMA(x_i,T). Has to be positive
+  Surface_p      =   1.606176477212D+00,  ! exponent of h(T(x_i)) has to be larger than 1.d0
+  Surface_lambda =   3.448876456441D+00,  ! exponent of SIGMA(x_i,T). Has to be between 2.0 and 4.0
+/
+
+&SKYRME_STIFFENING
+!
+! Stiffening property of EOS
+!  Discussion on Sec V A of SRO paper.
+!
+  stiffening_exponent = 5.00d0,
+  stiffening_ratio    = 0.01d0,
+  stiffening_symmetry = 1.00d0,
+/
+
+
+
+

@@ -1,0 +1,10 @@
+&input_test_list
+! point in phase space
+proton_fraction =  10.0D-02, ! proton fraction for test
+temperature     =  1.00D+02, ! temperature in MeV for test
+density         =  2.00D-09, ! density in fm^-3 for test
+! use initial guesses?
+guess                 = .true.,
+uniform_sol_guess     = -6.5d0,
+non_uniform_sol_guess = -9.0D0, -110.0D0, -2.15D0,
+/

@@ -1,0 +1,73 @@
+!
+!  This file has the same parametrizations as the L&S parametrization with
+!   K = 220 MeV. It uses the same choices for m_n, m_p, m_alpha, b_alpha as
+!  well as fixes A0 = 60 in the translational part of heavy nuclei energy.
+!
+&TABLE_INPUT
+!
+! Set table file name base
+!
+  make_hdf5_table = .true.,
+  write_solutions_to_file = .true.
+  filename_base   = "LS220star",       ! base for HDF5 table names
+  output_directory= "EOS_LS220star",   ! directory for ascii output files
+/
+
+&SKYRME_TYPE
+!
+! Skyrme parametrization type
+!  0 - Standard Skyrme
+!  1 - Simplified Skyrme
+!  2 - Standard Skyrme with high density modification (not implemented yet)
+!  3 - Simplified Skyrme with high density modification (not implemented yet)
+!
+  Skyrme_parametrization_type  = 1,
+  non_local_terms              = 1,
+! Default constants: 0 uses exp constraints for m_n, m_p, m_alpha, b_alpha
+!                    1 uses L&S values for m_n, m_p, m_alpha, b_alpha
+  Use_default_constants        = 1,
+/
+
+  &SKYRME_COEFFICIENTS
+!
+! quantities that should be given for simplified Skyrme parametrization
+! Calculation of nuclear physics properties is done according to Phys. Rep. 411 325 (2005)
+!
+  Coeff_a         =  -711.0105154621d0,
+  Coeff_b         =  -107.0621391257d0,
+  Coeff_c         =   934.6305278255d0,
+  Coeff_d         =     0.0000d0,
+  Coeff_alpha1    =     0.0000d0,
+  Coeff_alpha2    =     0.0000d0,
+  Coeff_delta     =     1.260282225483d0,
+/
+
+&SURFACE_PROPERTIES
+!
+! Determine whether surface fitting should be calculated explicitly
+!  or use pre-calculated fit values.
+!  Pre-calculated values must be given in this list if fit_surface = .true.
+!  For Skyrme_parametrization_type  = 1 or 3
+!  must set fit_surface = .true.
+!
+  fit_surface    = .false.
+  Surface_sigma  =   1.150000000000D+00,  ! Surface tension of symmetric nuclear matter (MeV fm^-3)
+  Surface_q      =   2.439862537000D+01,  ! factor q of SIGMA(x_i,T). Has to be positive
+  Surface_p      =   2.000000000000D+00,  ! exponent of h(T(x_i)) has to be larger than 1.d0
+  Surface_lambda =   3.000000000000D+00,  ! exponent of SIGMA(x_i,T). Has to be between 2.0 and 4.0
+!
+! determine whether temperature transition should be calculated explicitly
+!  or use vale from this list
+!
+  fit_temperature = .false.
+  T_crit = 16.804760D0,
+  T_crit_coeffs = 1.D0, -1.D0, 0.D0, 0.D0,
+/
+
+&HEAVY_NUCLEI_SIZE
+!
+! Set flag to fix heavy nuclei size as L&S do.
+!
+  fix_heavy_nuclei_size = .true.,
+  A00 = 60.d0,
+/
