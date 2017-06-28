@@ -1,0 +1,15 @@
+&space_list
+yp_min      =  0.005D0,         ! minimum proton fraction
+yp_max      =  0.655D0,         ! maximum proton fraction
+steps_in_Yp =  67,               ! steps in Yp every 0.01
+Yp_spacing = 0.01D0,             ! Yp spacing (supersedes option for steps_per_hundredth_in_yp)
+log10n_min  = -12.20d0,          ! log10 of minimum density in fm^-3
+log10n_max  =   0.80d0,          ! log10 of maximum density in fm^-3
+steps_per_decade_in_n  =  30,    ! steps per decade in density
+log10n_spacing = 0.033333333d0   ! log10(n) spacing (supersedes option for steps_per_decade_in_n)
+log10T_min  =  -2.0d0,           ! log10 of minimum density in fm^-3
+log10T_max  =   2.4d0,           ! log10 of maximum density in fm^-3
+steps_per_decade_in_T  = 30,     ! steps per decade in density
+log10T_spacing = 0.033333333d0   ! log10(T) spacing (supersedes option for steps_per_decade_in_n)
+/
+

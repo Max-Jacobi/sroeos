@@ -1,0 +1,11 @@
+!
+! name of tables to be read
+!
+&tables
+make_hdf5_table  = .TRUE.,
+merge_base = 'NRAPR_0000',
+sna_eos  = '/data/andre/tables/SNA/NRAPR_rho428_temp140_ye67_version1.0_20170605.h5',
+nse_eos  = '/data/andre/tables/NSE/NSE_3335_rho368_temp170_ye67_version1.0_20170601.h5',
+only_SNA = .TRUE.,
+only_NSE = .FALSE.,
+/

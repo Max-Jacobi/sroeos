@@ -1,0 +1,5 @@
+&transition
+  n_transition = -4.00d0,   ! Log10(transition density in fm^-3)
+  n_delta      =  0.33d0,   ! transition thickness parameter
+  n_tolerance  =  1.d-4,    ! tolerance in transition function
+/
