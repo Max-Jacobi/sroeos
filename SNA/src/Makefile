@@ -160,7 +160,7 @@ target: $(MODOBJ)
 	src/version.inc \
 	make.inc \
 	Makefile \
-	README \
+	README.md \
 	gitinfo \
 	&& rm make.inc
 
