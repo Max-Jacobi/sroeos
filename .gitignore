@@ -13,3 +13,7 @@ version.inc
 *.out
 *.toc
 make.inc
+main
+test
+merge_eos
+*.dSYM
