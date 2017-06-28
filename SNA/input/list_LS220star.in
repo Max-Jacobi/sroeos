@@ -8,7 +8,7 @@
 ! Set table file name base
 !
   make_hdf5_table = .true.,
-  write_solutions_to_file = .true.
+  write_solutions_to_file = .false.,
   filename_base   = "LS220star",       ! base for HDF5 table names
   output_directory= "EOS_LS220star",   ! directory for ascii output files
 /
