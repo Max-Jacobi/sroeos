@@ -38,6 +38,7 @@ MODULE Physical_Constants_Mod
 
 ! electron, neutron and proton masses in (MeV c²)
   REAL(DP), PARAMETER :: Mass_e = 0.510999_DP
+! neutron and proton mass set in the code.
   REAL(DP)            :: Mass_n
   REAL(DP)            :: Mass_p
   REAL(DP)            :: Neut_Prot_Mass_Diff
@@ -48,7 +49,7 @@ MODULE Physical_Constants_Mod
   REAL(DP)            :: M_alpha
 
 ! hbar in Mev fm
-  REAL(DP), PARAMETER :: Hbarc = 197.327_DP,  Hbarc_Square = Hbarc*Hbarc
+  REAL(DP), PARAMETER :: Hbarc = 197.3269788_DP,  Hbarc_Square = Hbarc*Hbarc
   REAL(DP), PARAMETER :: Alpha = 1.0_DP/137.036_DP
   REAL(DP), PARAMETER :: C_tau = R_3_5*(THREE*PI*PI)**R_2_3
   REAL(DP)            :: N_Q
@@ -65,38 +66,32 @@ MODULE Physical_Constants_Mod
 !  for electron EoS subroutines
 !  and conversion factor for tables
   !from NIST, also defined in lseos.2.7.f for EL_EOS
-   REAL(DP), PARAMETER :: neutron_mass_MeV = 939.56540d0 !neutron mass
-   REAL(DP), PARAMETER :: proton_mass_MeV  = 938.27204d0 ! proton mass
+   REAL(DP), PARAMETER :: neutron_mass_MeV = 939.5654133d0 !neutron mass
+   REAL(DP), PARAMETER :: proton_mass_MeV  = 938.2720813d0 ! proton mass
 
-   REAL(DP), PARAMETER :: HBC = 197.327d0
-   REAL(DP), PARAMETER :: alpha_coul = 1.d0/137.035999074d0
-   REAL(DP), PARAMETER :: clite = 29979245900.0d0
+   REAL(DP), PARAMETER :: HBC = Hbarc
+   REAL(DP), PARAMETER :: alpha_coul = 1.d0/137.035999139d0
+   REAL(DP), PARAMETER :: clite = 29979245800.0d0
 
-   REAL(DP), PARAMETER :: kb_erg = 1.3806504d-16
-   REAL(DP), PARAMETER :: kb_mev = 8.61738568d-11
-   REAL(DP), PARAMETER :: erg_to_mev = 6.24150636d5
-   REAL(DP), PARAMETER :: mev_to_cgs = 1.60217649d-6
-   REAL(DP), PARAMETER :: temp_mev_to_kelvin = 1.1604505d10
-   REAL(DP), PARAMETER :: press_EOS_to_cgs = 1.60217649d33
-   REAL(DP), PARAMETER :: energy_EOS_to_cgs = 1.60217649d-6/1.674927211d-24
-   REAL(DP), PARAMETER :: entropy_EOS_to_cgs = 1.3806504d-16/1.674927211d-24
-   REAL(DP), PARAMETER :: rho_cgs_to_EOS = 5.9704087d-16 !neutron mass
+   REAL(DP), PARAMETER :: kb_erg = 1.38064852d-16
+   REAL(DP), PARAMETER :: kb_mev = 8.6173303d-11
+   REAL(DP), PARAMETER :: erg_to_mev = 6.241509099d5
+   REAL(DP), PARAMETER :: mev_to_cgs = 1.6021766208d-6
+   REAL(DP), PARAMETER :: temp_mev_to_kelvin = 1.16045221d10
+   REAL(DP), PARAMETER :: press_EOS_to_cgs = 1.6021766208d33
+   REAL(DP), PARAMETER :: energy_EOS_to_cgs = 1.6021766208d-6/1.674927471d-24
+   REAL(DP), PARAMETER :: entropy_EOS_to_cgs = 1.38064852d-16/1.674927471d-24
+   REAL(DP), PARAMETER :: rho_cgs_to_EOS = 5.970407778d-16 !neutron mass
    REAL(DP), PARAMETER :: press_cgs_to_EOS  = 6.24150964d-34
    REAL(DP), PARAMETER :: energy_cgs_to_EOS = 1.674927211d-24/1.60217649d-6
-   REAL(DP), PARAMETER :: entropy_cgs_to_EOS = 1.674927211d-24/1.3806504d-16
-   REAL(DP), PARAMETER :: planck_cgs = 6.626176d-27
+   REAL(DP), PARAMETER :: entropy_cgs_to_EOS = 1.674927211d-24/1.38064852d-16
+   REAL(DP), PARAMETER :: planck_cgs = 6.626070040d-27
    REAL(DP), PARAMETER :: pi1 = 3.14159265358979d0
-   REAL(DP), PARAMETER :: avo = 5.9704082443567622d23 ! 1/m_n_cgs
+   REAL(DP), PARAMETER :: avo = 5.970407778d23 ! 1/m_n_cgs
    REAL(DP), PARAMETER :: sac_const = 2.0d0 * pi1 * (hbc)**2
   !   REAL(DP), PARAMETER :: avo = 6.0221367d23
 
    REAL(DP), PARAMETER :: m_n_cgs = neutron_mass_MeV*mev_to_cgs/clite**2
    REAL(DP), PARAMETER :: m_p_cgs = proton_mass_MeV*mev_to_cgs/clite**2
-
-     ! the following constants are used in Luke's mixing script
-     !  real*8,parameter :: e_nuc_to_cgs = 1.0d0/1.03654d-18 amu based
-     !  m_neutron based
-  REAL(DP), PARAMETER :: e_nuc_to_cgs = 1.0d0/1.04541174787614d-18
-  REAL(DP), PARAMETER :: p_nuc_to_cgs = 1.0d0/6.24151d-34
 
 END MODULE Physical_Constants_Mod
