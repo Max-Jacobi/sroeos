@@ -162,7 +162,7 @@ CONTAINS
 !$OMP SHARED(nse_merge_r,nse_merge_u)
     DO i_yp = yp_ini, yp_fin
       xe = Yp_min + dble(i_Yp-1)*Yp_step
-      WRITE (*,*) 'SNA loop. Yp = ', xe
+      WRITE (*,*) 'NSE loop. Yp = ', xe
       DO i_t = t_ini, t_fin
         temp = TEN**(Log10T_min+dble(i_t-1)/dble(steps_per_decade_in_T))
         temp_cgs = temp*temp_mev_to_kelvin
@@ -195,9 +195,11 @@ CONTAINS
 !         get lepton+photon part of EoS
           IF (isnan(abar).OR.isnan(zbar).OR.abar<=1.d-10.OR.zbar<=1.d-10) THEN
             WRITE (*,"(A25,15ES14.6)") 'NSE error at (y,T,n):', xe, temp, dens
-!          WRITE (*,"(A26,15ES14.6)") '     A, Z, Abar, x_h',&
-!                                     abar, zbar, nse_abar, nse_xh
-!          write (*,"(10ES15.7)") '     E, P, S, mu_n, mu_p', & !                                  nse_ener,nse_pres,nse_entr,nse_mu_n,nse_mu_p
+           WRITE (*,"(A26,15ES14.6)") '     A, Z, Abar, x_h',&
+                   nse_xn, nse_xp, nse_xa, nse_xh, nse_xl, & 
+                   nse_abar, nse_zbar, nse_albar, nse_zlbar
+!           write (*,"(10ES15.7)") '     E, P, S, mu_n, mu_p', & 
+!                                  nse_ener,nse_pres,nse_entr,nse_mu_n,nse_mu_p
             CYCLE
           ENDIF
 

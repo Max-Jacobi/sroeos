@@ -186,6 +186,8 @@ CONTAINS
     READ(10,NML=SPACE_LIST)
     CLOSE(10)
 
+    write (*,*) steps_per_decade_in_n, steps_per_decade_in_T, log10n_spacing
+
   !   check range of proton fraction Yp.
     CALL CHECK_RANGE_DP('Yp_min',Yp_min,1.D-3,1.D0)
     CALL CHECK_RANGE_DP('Yp_max',Yp_max,1.D-3,1.D0)
@@ -222,7 +224,7 @@ CONTAINS
     ENDIF
 
     n_ini = 1
-    n_chk = (Log10n_max-Log10n_min)*(steps_per_decade_in_n)
+    n_chk = (Log10n_max-Log10n_min)*dble(steps_per_decade_in_n) + 1.d0
   ! check if n_chk is integer.
   ! only necessary to not mess-up ASCII output files
   ! modify Log10n_min slightly to adjust for that if necessary
@@ -253,7 +255,8 @@ CONTAINS
     ENDIF
 
     t_ini = 1
-    t_chk = (Log10T_max-Log10T_min)*(steps_per_decade_in_T)
+    t_chk = (Log10T_max-Log10T_min)*dble(steps_per_decade_in_T) + 1.d0
+    write (*,*) (Log10T_max-Log10T_min), dble(steps_per_decade_in_T), 1.d0
   ! check if t_chk is integer.
   ! only necessary to not mess-up ASCII output files
   ! modify Log10T_min slightly to adjust for that if necessary
