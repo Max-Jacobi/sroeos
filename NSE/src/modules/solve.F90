@@ -97,6 +97,8 @@ CONTAINS
     ALLOCATE(fix(nn,nt,ny))
 
 !   Open ascii output files to output error messages
+    command = 'mkdir -p '//adjustl(trim(output_directory)) 
+    CALL SYSTEM(command)
     IF (write_solutions_to_file) THEN
       command = 'mkdir -p '//adjustl(trim(output_directory))//'/NO_SOL'
       CALL SYSTEM(command)
@@ -123,7 +125,7 @@ CONTAINS
 !$OMP SHARED(dpdy_tab,dsdy_tab,dmudy_tab) &
 !$OMP SHARED(ah_tab,zh_tab,al_tab,zl_tab) &
 !$OMP SHARED(xn_tab,xp_tab,xa_tab,xh_tab,xl_tab,fix)
-  DO k=0,ny3+1,1
+  DO k=ny3+1,0,-1 !0,ny3+1,1
     ! ALLOCATE auxiliary arrays and set them to zero
     ALLOCATE(  p3(0:nn3+1,0:nt3+1,0:2),   s3(0:nn3+1,0:nt3+1,0:2),   e3(0:nn3+1,0:nt3+1,0:2))
     ALLOCATE(muh3(0:nn3+1,0:nt3+1,0:2), mun3(0:nn3+1,0:nt3+1,0:2), mup3(0:nn3+1,0:nt3+1,0:2))
@@ -364,9 +366,10 @@ CONTAINS
 ! TODO: put this into a subroutine
 ! if no solution found for some point use interpolation in density
 !  to have an average value for that point
-  WRITE (*,*) "Adjusting points with problems. See file 'points_tried_to_fix.dat'. "
-  OPEN(10,FILE=TRIM(ADJUSTL(output_directory))//"/point_tried_to_fix.dat")
-  WRITE (10,"(A64)") 'Trying to fix values at (log10(n),log10(T),Ye):'
+  WRITE (*,*) "Adjusting points with problems."
+  WRITE (*,*) "See file 'points_tried_to_fix.dat' for details. "
+  OPEN(10,FILE=TRIM(ADJUSTL(output_directory))//"/points_tried_to_fix.dat",status='replace')
+  WRITE (10,"(A50)") 'Trying to fix values at (log10(n),log10(T),Ye):'
   DO k = 2, ny-1
     WRITE (*,*) 'Iteration', k-1, ' of ', ny-2
     DO j = 2, nt-1
@@ -414,7 +417,7 @@ CONTAINS
 
 ! check for points still not fixed
   OPEN(10,FILE=TRIM(ADJUSTL(output_directory))//"/not_fixed.dat")
-  WRITE (10,"(A64)") 'Problems at (log10(n),log10(T),Ye):'
+  WRITE (10,"(A50)") 'Problems at (log10(n),log10(T),Ye):'
   do i = 2, nn-1
     do j = 2, nt-1
       do k = 2, ny-1

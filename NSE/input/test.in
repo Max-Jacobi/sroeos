@@ -1,6 +1,6 @@
 &input_test_list
 ! point in phase space
-proton_fraction =  10.0D-02, ! proton fraction for test
-temperature     =  1.00D+02, ! temperature in MeV for test
-density         =  2.00D-09, ! density in fm^-3 for test
+proton_fraction =  62.99D-02, ! proton fraction for test
+temperature     =  1.00D-04,  ! temperature in MeV for test
+density         =  7.9524327D-02, ! density in fm^-3 for test
 /
