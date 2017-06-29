@@ -143,6 +143,7 @@ CONTAINS
     Log10nt_min = n_transition + n_delta*atanh(two*n_tolerance-one)
     Log10nt_max = n_transition - n_delta*atanh(two*n_tolerance-one)
 
+    write (*,*)
     write (*,"(A22,1ES12.4)") 'Transition density:   ', n_transition
     write (*,"(A22,1ES12.4)") 'Transition thickness: ', n_delta
     write (*,"(A22,1ES12.4)") 'Transition tolerance: ', n_tolerance
@@ -150,6 +151,7 @@ CONTAINS
                               Log10nt_min, Log10nt_max
     write (*,"(A30,2ES12.4)") 'Linear merge region (fm^-3): ', &
                               ten**Log10nt_min, ten**Log10nt_max
+    write (*,*)
 
     ! TODO: CHECK IF N_TRANSITION, N_DELTA, AND N_DELTA
     !       ARE WITHIN ACCEPTABLE RANGES.
@@ -222,7 +224,7 @@ CONTAINS
     ENDIF
 
     n_ini = 1
-    n_chk = (Log10n_max-Log10n_min)*(steps_per_decade_in_n)
+    n_chk = (Log10n_max-Log10n_min)*(steps_per_decade_in_n) + 1.D0
   ! check if n_chk is integer.
   ! only necessary to not mess-up ASCII output files
   ! modify Log10n_min slightly to adjust for that if necessary
@@ -253,7 +255,7 @@ CONTAINS
     ENDIF
 
     t_ini = 1
-    t_chk = (Log10T_max-Log10T_min)*(steps_per_decade_in_T)
+    t_chk = (Log10T_max-Log10T_min)*(steps_per_decade_in_T) + 1.D0
   ! check if t_chk is integer.
   ! only necessary to not mess-up ASCII output files
   ! modify Log10T_min slightly to adjust for that if necessary
