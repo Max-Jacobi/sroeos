@@ -162,7 +162,11 @@ CONTAINS
 !$OMP SHARED(nse_merge_r,nse_merge_u)
     DO i_yp = yp_ini, yp_fin
       xe = Yp_min + dble(i_Yp-1)*Yp_step
+<<<<<<< HEAD
       WRITE (*,*) 'NSE loop. Yp = ', xe
+=======
+      WRITE (*,*) 'NSE loop. Yp = ', xe 
+>>>>>>> c0cd0a0e7fef2f2cda08655823f89164d12889a8
       DO i_t = t_ini, t_fin
         temp = TEN**(Log10T_min+dble(i_t-1)/dble(steps_per_decade_in_T))
         temp_cgs = temp*temp_mev_to_kelvin

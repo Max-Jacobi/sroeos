@@ -151,7 +151,7 @@ CONTAINS
       OPEN(1000*thread+12,FILE=filename2,STATUS='replace')
     ENDIF
 
-    WRITE (*,"('Thread',1i2,' computing loop ',1i4,' of ',1i4, ' for y = ',1F8.6)") &
+    WRITE (*,"('Thread',1i4,' computing loop ',1i4,' of ',1i4, ' for y = ',1F8.6)") &
           thread, k, ny3+1, xy
 
     DO i=nn3+1,0,-1
