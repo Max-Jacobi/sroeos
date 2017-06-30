@@ -222,7 +222,9 @@ strongly recommend that you disable shared libraries and go with
 static libraries instead. This will greatly reduce potential headaches
 with dynamically linked symbols that are not found. Also, as a general
 guideline, if you can link the SRO EOS code components statically, do
-so. Linking statically may not be possible on MacOS.
+so. Linking statically may not be possible on MacOS and may require
+the installation of ``development'' packages for compilers and libraries
+on most Linux systems.
 
 Once you have setup all software/libraries, you need to create the
 \texttt{make.inc} file in the root directory of the SRO EOS code. This
