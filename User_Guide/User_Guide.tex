@@ -175,8 +175,18 @@ Please understand that our resources and time are limited and we may
 not be able to help you with basic compilation problem, coding
 problems, or with problems with external libraries.
 
-\section{Software Dependencies and \texttt{make.inc} for Compilation}
+\section{Requirements, Dependencies, and \texttt{make.inc} for Compilation}
 \label{sec:req}
+
+When making EOS tables, we recommend that you use a computer system
+with ample compute power (many CPU cores) and with at least 32 GB of
+RAM to build EOS tables. The default table ranges and resolutions in the
+SNA and NSE parts lead to tables of around 7 GB that will be merged
+to a final standard-resolution table of around 700 MB. The SNA code
+is the slowest component and typically requires a few hours using 20 CPU
+cores to build the default SNA table.
+
+
 
 The SRO EOS code requires the following software on your system:
 
@@ -202,7 +212,6 @@ The SRO EOS code requires the following software on your system:
    \url{http://www.netlib.org/lapack/} or through your operating
    system's package manager.
 
-
 \end{enumerate}
 Note that, in general, the \verb|HDF5|, \verb|LAPACK|, and \verb|BLAS|
 libraries must be compiled with the same compiler(s) (and compiler
@@ -220,6 +229,7 @@ Once you have setup all software/libraries, you need to create the
 file is read by the SRO EOS Makefiles to compile the code components
 \texttt{SNA}, \texttt{NSE}, and \texttt{MERGE}. We provide various
 examples for Linux and MacOS systems in the directory \textcolor{red}{\texttt{make\_inc\_examples}}.
+
 
 \section{The Single Nucleus Approximation Code \texttt{SNA}}\label{sec:SNA}
 
