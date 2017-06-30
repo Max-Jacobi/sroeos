@@ -94,7 +94,7 @@ using a compressible non-relativistic liquid-drop model with Skyrme
 interactions.
 
 
-At low densities, one may chose to transition from the \LSn-type EOS,
+At low densities, one may choose to transition from the \LSn-type EOS,
 which uses a single nucleus approximation (SNA), to a nuclear
 statistical equilibrium (NSE) description of an ensemble of nuclei. To
 simplify its usage, the SRO code is separated into three different
@@ -172,7 +172,7 @@ let us know by sending email to this address:
 \end{center}
 
 Please understand that our resources and time are limited and we may
-not be able to help you with basic compilation problem, coding
+not be able to help you with basic compilation problems, coding
 problems, or with problems with external libraries.
 
 \section{Requirements, Dependencies, and \texttt{make.inc} for Compilation}
@@ -1006,16 +1006,16 @@ The \verb|HDF5| output file, unless limited by the \verbnml|TABLE_OUTPUT| nameli
  \item 3D Array \verbprm+muh+. Contains $\hat\mu=\mu_n-\mu_p$ in MeV. 
    Note that $\hat\mu$ includes the neutron--proton mass difference.
    
- \item 3D Array \verbprm+mun+. Contains $\mu_p$ in MeV with respect to the
+ \item 3D Array \verbprm+mun+. Contains $\mu_n$ in MeV with respect to the
    free neutron mass.
 
- \item 3D Array \verbprm+mup+. Contains $\mu_n$ in MeV with respect to the
+ \item 3D Array \verbprm+mup+. Contains $\mu_p$ in MeV with respect to the
    free neutron mass.
 
  \item 3D Array \verbprm+dpdn+. Contains $dP/dn\vert_{T,y}$ in MeV.  
 
  \item 3D Array
-   \verbprm+dsdn+. Contains $ds/dn\vert_{T,y}$ in $k_B$\,fm$^3$\,bayon$^{-1}$. 
+   \verbprm+dsdn+. Contains $ds/dn\vert_{T,y}$ in $k_B$\,fm$^3$\,baryon$^{-1}$. 
 
  \item 3D Array \verbprm+dmudn+. Contains $d\mu_h/dn\vert_{T,y}$ in MeV\,fm$^3$. 
 
@@ -1447,13 +1447,14 @@ The \verb|HDF5| output file contains the following datasets:
  \item 3D Array \verbprm+muh+. Contains $\hat\mu=\mu_n-\mu_p$ in MeV. 
    Note that here $\mu_n$ and $\mu_p$ are obtained with respect to the neutron vacuum mass. 
    
- \item 3D Array \verbprm+mun+. Contains $\mu_p$ in MeV. 
+ \item 3D Array \verbprm+mun+. Contains $\mu_n$ in MeV. 
 
- \item 3D Array \verbprm+mup+. Contains $\mu_n$ in MeV.
+ \item 3D Array \verbprm+mup+. Contains $\mu_p$ in MeV.
 
  \item 3D Array \verbprm+dpdn+. Contains $dP/dn\vert_{T,y}$ in MeV.  
 
- \item 3D Array \verbprm+dsdn+. Contains $ds/dn\vert_{T,y}$ in $k_B$\,fm$^3$\,bayon$^{-1}$. 
+ \item 3D Array \verbprm+dsdn+. Contains $ds/dn\vert_{T,y}$ in
+ $k_B$\,fm$^3$\,baryon$^{-1}$. 
 
  \item 3D Array \verbprm+dmudn+. Contains $d\mu_h/dn\vert_{T,y}$ in MeV\,fm$^3$. 
 
@@ -1938,7 +1939,7 @@ display of rather poor software engineering. (But it works).
 
 \textbf{Note that the current versions of this EOS
   interface/driver/interpolation implementation supports handling the
-  relativistic speed of sound corrections as described in the above.}
+  relativistic speed of sound corrections as described above.}
 
 
 \subsection{C/C++ Interface/Driver/Interpolator}
@@ -1955,7 +1956,7 @@ and perform up to a factor of three faster than the legacy
 
 \textbf{Note that the current versions of this EOS
   interface/driver/interpolation implementation supports handling the
-  relativistic speed of sound corrections as described in the above.}
+  relativistic speed of sound corrections as described above.}
 
 \section{Code and Data Provenance: \texttt{Formaline}}
 \label{sec:formaline}
