@@ -84,11 +84,13 @@ MODULE Read_Skyrme_Coefficients_Mod
 !   create output directory (may be system/compiler dependent)
     command = ADJUSTL('mkdir ') // ADJUSTL(TRIM(output_directory))
     CALL EXECUTE_COMMAND_LINE (command)
-!   create output directories for solutions
-    command = ADJUSTL('mkdir ') // ADJUSTL(TRIM(output_directory))// ADJUSTL(TRIM('/SOL'))
-    CALL EXECUTE_COMMAND_LINE (command)
-    command = ADJUSTL('mkdir ') // ADJUSTL(TRIM(output_directory))// ADJUSTL(TRIM('/NO_SOL'))
-    CALL EXECUTE_COMMAND_LINE (command)
+    IF (write_solutions_to_file) THEN
+!     create output directories for solutions
+      command = ADJUSTL('mkdir ') // ADJUSTL(TRIM(output_directory))// ADJUSTL(TRIM('/SOL'))
+      CALL EXECUTE_COMMAND_LINE (command)
+      command = ADJUSTL('mkdir ') // ADJUSTL(TRIM(output_directory))// ADJUSTL(TRIM('/NO_SOL'))
+      CALL EXECUTE_COMMAND_LINE (command)
+    ENDIF
     READ(10,NML=SKYRME_TYPE)
 
     SELECT CASE (Use_default_constants)

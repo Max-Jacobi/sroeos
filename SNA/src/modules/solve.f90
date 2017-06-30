@@ -56,14 +56,18 @@ CONTAINS
     LOGICAL(LGCL) :: non_uniform_sol_found_for_T
 
     CHARACTER(LEN=64) :: filename1, filename2, string_Yp, outdir
-    INTEGER(I4B) :: filenumber1, filenumber2
+    INTEGER(I4B) :: filenumber1, filenumber2, nthreads
 
     ! open file where output solutions will be written
     !  n, T, Ye, log10(n_no), log10(n_po), log10(u)
     outdir = output_directory
 
+    nthreads = omp_get_max_threads()
+
     write(6,*) "OpenMP parallization: density-temperature slices at fixed proton fraction."
     write(6,"(A11,I4,A7)") " There are ",Yp_fin," slices."
+    IF (nthreads > i_Yp) STOP & 
+              "Not a good idea to have more threads than Yp slices"
 !$OMP PARALLEL DO SCHEDULE (DYNAMIC,1) DEFAULT(NONE) &
 !$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min,outdir,write_solutions_to_file) &
 !$OMP FIRSTPRIVATE(n_ini,n_fin,steps_per_decade_in_n,Log10n_min) &
@@ -111,17 +115,20 @@ CONTAINS
 !      TODO: Adjust filename for y < 0.001
       WRITE (string_Yp,"(1F5.3)") Yp
       thread = omp_get_thread_num()
-      filename1 = TRIM(adjustl(outdir))//"/SOL/"//trim(adjustl(string_Yp))
-      filenumber1 = 2000*(thread+1)+11
-      filename2 = TRIM(adjustl(outdir))//"/NO_SOL/"//trim(adjustl(string_Yp))
-      filenumber2 = 2000*(thread+1)+12
+      IF (write_solutions_to_file) THEN
+        filename1 = TRIM(adjustl(outdir))//"/SOL/"//trim(adjustl(string_Yp))
+        filenumber1 = 2000*(thread+1)+11
+        filename2 = TRIM(adjustl(outdir))//"/NO_SOL/"//trim(adjustl(string_Yp))
+        filenumber2 = 2000*(thread+1)+12
 !     Open ASCII files to output solutions and for when no solution is found
 !     TODO: Add something to check for NaNs.
 !     TODO: Add flag whether want to print solutions as it may use to much space.
-      OPEN(filenumber1,file=filename1,status='replace')
-      OPEN(filenumber2,file=filename2,status='replace')
+        OPEN(filenumber1,file=filename1,status='replace')
+        OPEN(filenumber2,file=filename2,status='replace')
+      ENDIF
 !$OMP CRITICAL
-      WRITE ( *,"('thread = ',1I4,':',1I4,' of ',1I4)") thread, i_Yp,  Yp_fin
+      WRITE (*,"('Thread',1i4,' computing loop ',1i4,' of ',1i4, ' for y = ',1F8.6)") &
+          thread, i_Yp, Yp_fin, Yp
 !$OMP END CRITICAL
 !     loop in Temperature from high to low
       DO i_T = T_fin, T_ini, -1
@@ -343,14 +350,14 @@ CONTAINS
           ENDIF
           CALL SAVE_TO_TABLE (i_n, i_T, i_Yp, n, Yp, T)
 
-          FLUSH(filenumber1) ; FLUSH(filenumber2)
+          IF (write_solutions_to_file) THEN 
+            FLUSH(filenumber1) ; FLUSH(filenumber2)
+          ENDIF
         ENDDO
-!!$OMP CRITICAL
-!          write (*,"(5ES16.8,I4,L2)") Yp, T, n, &
-!          n_transition_min, n_transition_max
-!!$OMP END CRITICAL
       ENDDO
-      CLOSE(filenumber1) ; CLOSE(filenumber2)
+      IF (write_solutions_to_file) THEN 
+        CLOSE(filenumber1) ; CLOSE(filenumber2)
+      ENDIF
       deallocate(x_nu_guess_T,x_nu_guess_n,u_solution,nu_solution)
     ENDDO
 !$OMP end parallel do
