@@ -24,8 +24,10 @@ MODULE Solve_Mod
   USE Main_output_Mod
   USE Make_Tables_Mod
   USE Save_to_Table_Mod
+#ifdef _OPENMP
   USE OMP_LIB
-
+#endif
+  
   IMPLICIT NONE
 
 CONTAINS
@@ -62,8 +64,12 @@ CONTAINS
     !  n, T, Ye, log10(n_no), log10(n_po), log10(u)
     outdir = output_directory
 
+#ifdef _OPENMP    
     nthreads = omp_get_max_threads()
-
+#else
+    nthreads = 1
+#endif
+    
     write(6,*) "OpenMP parallization: density-temperature slices at fixed proton fraction."
     write(6,"(A11,I4,A7)") " There are ",Yp_fin," slices."
     IF (nthreads > Yp_fin) then 
@@ -118,7 +124,11 @@ CONTAINS
 !     Set file names for output.
 !      TODO: Adjust filename for y < 0.001
       WRITE (string_Yp,"(1F5.3)") Yp
+#ifdef _OPENMP
       thread = omp_get_thread_num()
+#else
+      thread = 1
+#endif
       IF (write_solutions_to_file) THEN
         filename1 = TRIM(adjustl(outdir))//"/SOL/"//trim(adjustl(string_Yp))
         filenumber1 = 2000*(thread+1)+11

@@ -23,13 +23,18 @@ PROGRAM Main
   USE Allocate_Mod
   USE Solve_Mod
   USE Write_to_table_Mod
+#ifdef _OPENMP
   USE omp_lib
-
+#endif
   ! No implicit typing
   IMPLICIT NONE
   integer :: nthreads
+#ifdef _OPENMP
   nthreads = omp_get_max_threads()
-
+#else
+  nthreads = 1
+#endif
+  
   IS_TEST = .FALSE.
 
   ! output banner

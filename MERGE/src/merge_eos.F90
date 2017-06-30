@@ -19,8 +19,9 @@ PROGRAM MERGE_EOS
     use Read_Table_Mod
     use MERGE_TABLES_MOD
     use write_table
+#ifdef _OPENMP
     use omp_lib
-
+#endif
 !*****************************************************************************80
 !
 !  Ths program merges three EoS tables
@@ -34,8 +35,11 @@ PROGRAM MERGE_EOS
   CHARACTER(LEN=4) :: flag
   INTEGER(I4B) :: i
   integer :: nthreads
+#ifdef _OPENMP
   nthreads = omp_get_max_threads()
-
+#else
+  nthreads = 1
+#endif
 
   ! output banner
   write(6,*) "******************************************************************************"

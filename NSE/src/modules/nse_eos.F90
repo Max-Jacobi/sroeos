@@ -38,8 +38,10 @@ CONTAINS
 
     USE Physical_Constants_Mod
     USE Fermi_Integrals_Mod
+#ifdef _OPENMP
     USE omp_lib
-
+#endif
+    
     IMPLICIT NONE
 
     REAL(DP), INTENT(IN)  :: xn, xtemp, xye
@@ -66,8 +68,12 @@ CONTAINS
     INTEGER(I4B), SAVE :: kmax, kmax_old
 !$OMP THREADPRIVATE(kmax,ymass,order,order_old,muno,mupo,To)
 
+#ifdef _OPENMP    
     thread = omp_get_thread_num()
-
+#else
+    thread = 1
+#endif
+    
 !   find proton and neutron locations
 !   TODO: move this nse_read_nuclear_data module so it is done only once
 !         add some way to make sure that ineut = 1 and iprot = 2
@@ -362,8 +368,9 @@ CONTAINS
     use Physical_Constants_Mod
     use READ_NUCLEAR_DATA_TABLE_MOD
     use Fermi_Integrals_Mod
+#ifdef _OPENMP
     use omp_lib
-
+#endif
     implicit none
 
     REAL(DP), INTENT(IN)    :: xn, xtemp, xye
@@ -382,8 +389,12 @@ CONTAINS
     REAL(DP) rhocgs,TK,mu_i,mu_i_eq, Ec, dEcdln, d2Ecdln2
     REAL(DP) :: zfermi12, ifermi12, zfermi32, etat, tau, dz
 
+#ifdef _OPENMP    
     thread = omp_get_thread_num()
-
+#else
+    thread = 1
+#endif
+    
     ! Intialize internal arrays, this is basically vestigial
     if (num_isotopes .ne. SIZE(nuclei) .or. (.not. allocated(aion_nse))) then
 

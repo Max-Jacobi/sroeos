@@ -24,8 +24,10 @@ MODULE Solve_Mod
   USE NSE_EOS_MOD
   USE Isotopes_Mod
   USE share
+#ifdef _OPENMP
   USE omp_lib
-
+#endif
+  
   IMPLICIT NONE
 
 CONTAINS
@@ -131,8 +133,12 @@ CONTAINS
     ALLOCATE(muh3(0:nn3+1,0:nt3+1,0:2), mun3(0:nn3+1,0:nt3+1,0:2), mup3(0:nn3+1,0:nt3+1,0:2))
      p3 = zero ; s3 = zero ; e3 = zero ; muh3 = zero ; mun3 = zero ; mup3 = zero
     ! get thread number (one for each proton fraction)
-    thread = omp_get_thread_num()
-    ! compute proton fraction for given point
+#ifdef _OPENMP
+     thread = omp_get_thread_num()
+#else
+     thread = 1
+#endif
+     ! compute proton fraction for given point
     modk = mod(k,3) ; k0 = (k+2) ; k3 = k0/3 ; modk0 = mod(k0,3)
     IF (modk==0) xy = Yp_min + (Yp_max-Yp_min)*REAL(k-0)/REAL(ny3-1) - dy/2.d0
     IF (modk==1) xy = Yp_min + (Yp_max-Yp_min)*REAL(k-1)/REAL(ny3-1)

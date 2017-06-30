@@ -151,10 +151,11 @@ target: $(MODOBJ)
 	src/make_table/*.f90 \
 	src/make_table/*.cc \
 	src/modules/*.f90 \
+	src/modules/*.F90 \
 	src/nleqslv/*.f90 \
 	src/eleos/src/*.f90 \
 	src/eleos/src/*.dek \
-	src/main.f90 \
+	src/main.F90 \
 	src/test.f90 \
 	src/Makefile \
 	src/version.inc \
@@ -209,13 +210,13 @@ obj/include_src_input.o : make_table/include_src_input.cc
 obj/polynomial_fit.o : nuclear_surface/polynomial_fit.f90
 	$(FC) $(OPTION) $(LABLAS) -c $< -o $@  $(MODDIR)
 
-obj/modules/solve.o : solve.f90
+obj/solve.o : modules/solve.F90
 	$(FC) $(LIBS) -c $< -o $@ $(MODDIR)
 
 obj/test.o : test.f90
 	$(FC) $(LIBS) -c $< -o $@ $(MODDIR)
 
-obj/main.o : main.f90
+obj/main.o : main.F90
 	$(FC) $(LIBS) -c $< -o $@ $(MODDIR)
 
 clean:
