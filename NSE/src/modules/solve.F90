@@ -15,7 +15,7 @@
 !
 MODULE Solve_Mod
 
-  USE Kind_Types_Mod, ONLY : DP, I4B
+  USE Kind_Types_Mod, ONLY : SP, DP, I4B
   USE Physical_constants_Mod
   USE Phase_Space_Input_Mod
   USE ALLOCATABLE_Tables_Mod
@@ -74,6 +74,10 @@ CONTAINS
     LOGICAL :: loop
     INTEGER(I4B) :: nthreads
 
+    REAL(DP) :: wtime
+    REAL(SP) :: xtime
+    INTEGER(I4B) :: hours, minutes, seconds
+
     ALLOCATE(xmass(num_isotopes))
     xmass(:) = 0.0d0
 
@@ -125,6 +129,8 @@ CONTAINS
        stop
     endif
 
+    open (9,file=trim(adjustl(output_directory))//"/timer.dat")
+
 !   Iterate over (Yp,T,n) grid and save output arrays
 !$OMP PARALLEL DO SCHEDULE(DYNAMIC,3) DEFAULT(SHARED)&
 !$OMP PRIVATE(xy,xn,xt,loop,xmass,press,eps,entropy,mu_n,mu_p,mu_hat) &
@@ -142,8 +148,17 @@ CONTAINS
 !$OMP SHARED(dpdt_tab,dsdt_tab,dmudt_tab) &
 !$OMP SHARED(dpdy_tab,dsdy_tab,dmudy_tab) &
 !$OMP SHARED(ah_tab,zh_tab,al_tab,zl_tab) &
-!$OMP SHARED(xn_tab,xp_tab,xa_tab,xh_tab,xl_tab,fix)
+!$OMP SHARED(xn_tab,xp_tab,xa_tab,xh_tab,xl_tab,fix) &
+!$OMP PRIVATE(wtime,hours,minutes,seconds)
+! loop over proton fractions
   DO k=ny3+1,0,-1 !0,ny3+1,1
+! start timer
+#ifdef _OPENMP 
+    wtime = omp_get_wtime ( )
+#else
+    call cpu_time ( xtime )
+#endif
+
     ! ALLOCATE auxiliary arrays and set them to zero
     ALLOCATE(  p3(0:nn3+1,0:nt3+1,0:2),   s3(0:nn3+1,0:nt3+1,0:2),   e3(0:nn3+1,0:nt3+1,0:2))
     ALLOCATE(muh3(0:nn3+1,0:nt3+1,0:2), mun3(0:nn3+1,0:nt3+1,0:2), mup3(0:nn3+1,0:nt3+1,0:2))
@@ -363,6 +378,24 @@ CONTAINS
     IF (write_solutions_to_file) THEN
       CLOSE(1000*thread+10) ; CLOSE(1000*thread+11) ; CLOSE(1000*thread+12)
     ENDIF
+!   get time
+#ifdef _OPENMP 
+      wtime = omp_get_wtime ( ) - wtime
+      hours   = int(wtime)/3600
+      minutes = mod(int(wtime),3600)/60
+      seconds = mod(mod(int(wtime),3600),60)
+!$OMP CRITICAL
+      WRITE (9,"('Thread',1i4,' computed EOS for y = ',1F8.6, &
+      ' in ',1I4,':',1I2.2,':',1I2.2)") thread, xy, hours, minutes, seconds
+!$OMP END CRITICAL
+#else
+      call cpu_time ( xtime )
+      hours   = int(xtime)/3600
+      minutes = mod(int(xtime),3600)/60
+      seconds = mod(mod(int(xtime),3600),60)
+      WRITE (9,"('Thread',1i4,' computed EOS for y = ',1F8.6, &
+      ' in',1I3,':',1I2.2,':',1I2.2)") thread, xy, hours, minutes, seconds
+#endif
   ENDDO
 !$OMP END PARALLEL DO
 

@@ -60,6 +60,10 @@ CONTAINS
     CHARACTER(LEN=64) :: filename1, filename2, string_Yp, outdir
     INTEGER(I4B) :: filenumber1, filenumber2, nthreads
 
+    REAL(DP) :: wtime
+    REAL(SP) :: xtime
+    INTEGER(I4B) :: hours, minutes, seconds
+
     ! open file where output solutions will be written
     !  n, T, Ye, log10(n_no), log10(n_po), log10(u)
     outdir = output_directory
@@ -69,14 +73,16 @@ CONTAINS
 #else
     nthreads = 1
 #endif
-    
+
     write(6,*) "OpenMP parallization: density-temperature slices at fixed proton fraction."
     write(6,"(A11,I4,A7)") " There are ",Yp_fin," slices."
-    IF (nthreads > Yp_fin) then 
+    if (nthreads > Yp_fin) then 
        write(6,*) "Requesting less proton fraction slices than OpenMP threads. This will fail!"
        write(6,*) "Aborting!"
        stop
     endif
+ 
+    open (9,file=trim(adjustl(output_directory))//"/timer.dat")
 
 !$OMP PARALLEL DO SCHEDULE (DYNAMIC,1) DEFAULT(NONE) &
 !$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min,outdir,write_solutions_to_file) &
@@ -94,9 +100,17 @@ CONTAINS
 !$OMP PRIVATE(T_LARGER_THAN_Tcrit, n_LARGER_THAN_nmax, n_SMALLER_THAN_nmin) &
 !$OMP PRIVATE(uniform_solution,non_uniform_solution,retry,nu_flag,nu_true) &
 !$OMP PRIVATE(x_nu_guess_n,x_nu_guess_T,u_solution,nu_solution) &
-!$OMP PRIVATE(filename1,filename2,filenumber1,filenumber2,string_Yp)
+!$OMP PRIVATE(filename1,filename2,filenumber1,filenumber2,string_Yp) &
+!$OMP PRIVATE(wtime,hours,minutes,seconds)
 ! loop over proton fractions
     DO i_Yp = Yp_fin, Yp_ini, -1
+      ! start timer
+#ifdef _OPENMP 
+      wtime = omp_get_wtime ( )
+#else
+      call cpu_time ( xtime )
+#endif
+
       ! set proton fraction
       Yp = Yp_min + dble(i_Yp-1)*Yp_step
       ! n_transition is the maximum density where we expect a transition
@@ -373,8 +387,27 @@ CONTAINS
         CLOSE(filenumber1) ; CLOSE(filenumber2)
       ENDIF
       deallocate(x_nu_guess_T,x_nu_guess_n,u_solution,nu_solution)
+      ! start timer
+#ifdef _OPENMP 
+      wtime = omp_get_wtime ( ) - wtime
+      hours   = int(wtime)/3600
+      minutes = mod(int(wtime),3600)/60
+      seconds = mod(mod(int(wtime),3600),60)
+!$OMP CRITICAL
+      WRITE (9,"('Thread',1i4,' computed EOS for y = ',1F8.6, &
+      ' in ',1I4,':',1I2.2,':',1I2.2)") thread, Yp, hours, minutes, seconds
+!$OMP END CRITICAL
+#else
+      call cpu_time ( xtime )
+      hours   = int(xtime)/3600
+      minutes = mod(int(xtime),3600)/60
+      seconds = mod(mod(int(xtime),3600),60)
+      WRITE (9,"('Thread',1i4,' computed EOS for y = ',1F8.6, &
+      ' in',1I3,':',1I2.2,':',1I2.2)") thread, Yp, hours, minutes, seconds
+#endif
     ENDDO
 !$OMP end parallel do
+    CLOSE(9)
 
   END SUBROUTINE SOLVE
 
