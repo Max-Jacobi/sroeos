@@ -85,7 +85,7 @@ CONTAINS
 !$OMP SHARED(final_tab)
     DO i_yp = yp_ini, yp_fin
       xe = Yp_min + dble(i_Yp-1)*Yp_step
-      WRITE (*,*) 'MERGE loop. Yp = ', xe
+      WRITE (6,"(A18,F7.5)") 'MERGE loop. Yp = ', xe
       DO i_t = t_ini, t_fin
         temp = TEN**(Log10T_min+dble(i_t-1)/dble(steps_per_decade_in_T))
         temp_cgs = temp*temp_mev_to_kelvin
