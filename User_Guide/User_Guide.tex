@@ -196,9 +196,12 @@ The SRO EOS code requires the following software on your system:
   your operating system's package manager or get it from
   \url{https://git-scm.com}.
  \item Fortran 90+, C++, and C compilers, such as the \verb|gcc|
-   compiler suite available at \url{https://gcc.gnu.org} or
-   through your operating system's package manager. Your compiler suite
-   must support OpenMP parallelization (most current ones do).
+   compiler suite available at \url{https://gcc.gnu.org} or through
+   your operating system's package manager. It is highly recommended
+   to use a compiler that supportes OpenMP shared-memory OpenMP
+   parallelization (most current ones do). Without parallelization,
+   solving for the EOS will be very slow. Make sure to look up the
+   correct compiler flag to enable OpenMP support during compilation.
 
  \item The \verb|HDF5| library, available at
    \url{https://support.hdfgroup.org/HDF5/}. It must be compiled with
@@ -270,8 +273,9 @@ discussed in Sections \ref{ssec:SNA_in} and \ref{ssec:SNA_out},
 respectively.
 
 \textbf{IMPORTANT:} When solving for the EOS, the code will make use
-of OpenMP parallelization. It will use as many OpenMP threads as
-specified by the system environment variable
+of OpenMP parallelization (provided the compiler supports it and the
+correct flags are set during compilation). It will use as many OpenMP
+threads as specified by the system environment variable
 \texttt{OMP\_NUM\_THREADS}. Make sure to check what this is set to and
 adjust it, if you want to use less or more threads. We do not
 recommend using more threads than available physical CPU cores on your
@@ -1110,7 +1114,8 @@ Their inputs and outputs are discussed in Section \ref{ssec:NSE_in}
 and \ref{ssec:NSE_out}, respectively.
 
 \textbf{IMPORTANT:} When solving for the EOS, the code will make use
-of OpenMP parallelization. It will use as many OpenMP threads as
+of OpenMP parallelization (provided the compiler supports it and the
+correct flags are set during compilation). It will use as many OpenMP threads as
 specified by the system environment variable
 \texttt{OMP\_NUM\_THREADS}. Make sure to check what this is set to and
 adjust it, if you want to use less or more threads. We do not
@@ -1538,12 +1543,13 @@ respectively.
 
 
 \textbf{IMPORTANT:} When creating the combined EOS table, the code
-will make use of OpenMP parallelization. It will use as many OpenMP
-threads as specified by the system environment variable
-\texttt{OMP\_NUM\_THREADS}. Make sure to check what this is set to and
-adjust it, if you want to use less or more threads. We do not
-recommend using more threads than available physical CPU cores on your
-machine.
+will make use of OpenMP parallelization (provided the compiler
+supports it and the correct flag is set during compilation). It will
+use as many OpenMP threads as specified by the system environment
+variable \texttt{OMP\_NUM\_THREADS}. Make sure to check what this is
+set to and adjust it, if you want to use less or more threads. We do
+not recommend using more threads than available physical CPU cores on
+your machine.
 
 
 \subsection{Input}
