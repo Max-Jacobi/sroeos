@@ -4,16 +4,14 @@
  OPTION     = -O1 -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132
 
 HDF5DIR=/opt/cray/hdf5/default/gnu/5.1/
-#HDF5DIR=/usr/local/hdf5/
-HDF5LIBS=-L$(HDF5DIR)/lib/ -lhdf5_fortran -lhdf5 
+HDF5LIBS=-L$(HDF5DIR)/lib/ -lhdf5_fortran -lhdf5
 HDF5INCS=-I$(HDF5DIR)/include/
 
-LAPACKDIR=/N/u/andschn/BigRed2/AIC/LSEOSF90/src/nleqslv/lapack-3.6.0
-#LAPACKDIR=/home/andre/Research/lapack-3.7.0/
-LAPACKLIBS=-L$(LAPACKDIR) -llapack
+LAPACKDIR=/opt/cray/libsci/default/gnu/5.1/x86_64/
+LAPACKLIBS=-L${LAPACKDIR}/lib -lsci_gnu
 
-BLASDIR=/N/u/andschn/BigRed2/AIC/LSEOSF90/src/nleqslv/lapack-3.6.0
-#BLASDIR=/home/andre/Research/lapack-3.7.0/
-BLASLIBS=-L$(BLASDIR) -lrefblas
+BLASDIR=/opt/cray/libsci/default/gnu/5.1/x86_64/
+BLASLIBS=-L${LAPACKDIR}/lib -lsci_gnu
 
 MODDIR=-Jmod
+
