@@ -66,8 +66,12 @@ CONTAINS
 
     write(6,*) "OpenMP parallization: density-temperature slices at fixed proton fraction."
     write(6,"(A11,I4,A7)") " There are ",Yp_fin," slices."
-    IF (nthreads > i_Yp) STOP & 
-              "Not a good idea to have more threads than Yp slices"
+    IF (nthreads > Yp_fin) then 
+       write(6,*) "Requesting less proton fraction slices than OpenMP threads. This will fail!"
+       write(6,*) "Aborting!"
+       stop
+    endif
+
 !$OMP PARALLEL DO SCHEDULE (DYNAMIC,1) DEFAULT(NONE) &
 !$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min,outdir,write_solutions_to_file) &
 !$OMP FIRSTPRIVATE(n_ini,n_fin,steps_per_decade_in_n,Log10n_min) &
