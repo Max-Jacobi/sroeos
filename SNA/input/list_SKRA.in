@@ -19,7 +19,6 @@
 ! Default constants: 0 uses exp constraints for m_n, m_p, m_alpha, b_alpha
 !                    1 uses L&S values for m_n, m_p, m_alpha, b_alpha
   Use_default_constants        = 0,
-  High_density_stiffening      = 0,
 /
 
 &SKYRME_COEFFICIENTS
