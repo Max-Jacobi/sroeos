@@ -72,6 +72,7 @@ CONTAINS
 !
     INTEGER(I4B) :: modi, modj, modk, modi0, modj0, modk0
     LOGICAL :: loop
+    INTEGER(I4B) :: nthreads
 
     ALLOCATE(xmass(num_isotopes))
     xmass(:) = 0.0d0
@@ -109,6 +110,21 @@ CONTAINS
       command = 'mkdir -p '//adjustl(trim(output_directory))//'/SOL'
       CALL SYSTEM(command)
     ENDIF
+
+#ifdef _OPENMP    
+    nthreads = omp_get_max_threads()
+#else
+    nthreads = 1
+#endif
+
+    write(6,*) "OpenMP parallization: density-temperature slices at fixed proton fraction."
+    write(6,"(A11,I4,A7)") " There are ",Yp_fin," slices."
+    if (nthreads > Yp_fin) then
+       write(6,*) "Requesting less proton fraction slices than OpenMP threads. This will fail!"
+       write(6,*) "Aborting!"
+       stop
+    endif
+
 !   Iterate over (Yp,T,n) grid and save output arrays
 !$OMP PARALLEL DO SCHEDULE(DYNAMIC,3) DEFAULT(SHARED)&
 !$OMP PRIVATE(xy,xn,xt,loop,xmass,press,eps,entropy,mu_n,mu_p,mu_hat) &
