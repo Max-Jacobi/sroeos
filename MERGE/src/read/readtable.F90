@@ -18,6 +18,7 @@ MODULE Read_Table_Mod
   USE Table_Sizes_Mod
   USE HDF5
   USE Phase_Space_Input_Mod
+  USE Physical_Constants_Mod, ONLY : neutron_mass_MeV, proton_mass_MeV
   USE Transition_Input_Mod, ONLY : Log10nt_max, Log10nt_min
   USE Tables_Input_Mod, ONLY : only_sna, only_NSE
 
@@ -132,6 +133,8 @@ CONTAINS
   ! 24 -> zlbar
   ! 25 -> rad
   ! 26 -> u
+  ! 27 -> meffn
+  ! 28 -> meffp
 
     dims3(1)=nrho
     dims3(2)=ntemp
@@ -438,6 +441,8 @@ CONTAINS
         call h5dclose_f(dset_id,error)
         accerr=accerr+error
         alltables(:,:,:,25:26) = 0.d0
+        alltables(:,:,:,27) = neutron_mass_MeV
+        alltables(:,:,:,28) = proton_mass_MeV
       case("SNA")
         ! average nucleus
         call h5dopen_f(file_id, "abar", dset_id, error)
@@ -455,6 +460,14 @@ CONTAINS
         accerr=accerr+error
         call h5dopen_f(file_id, "u", dset_id, error)
         call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, alltables(:,:,:,26),dims3,error)
+        call h5dclose_f(dset_id,error)
+        accerr=accerr+error
+        call h5dopen_f(file_id, "meff_n", dset_id, error)
+        call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,alltables(:,:,:,27),dims3,error)
+        call h5dclose_f(dset_id,error)
+        accerr=accerr+error
+        call h5dopen_f(file_id, "meff_p", dset_id, error)
+        call h5dread_f(dset_id, H5T_NATIVE_DOUBLE,alltables(:,:,:,28),dims3,error)
         call h5dclose_f(dset_id,error)
         accerr=accerr+error
     end select

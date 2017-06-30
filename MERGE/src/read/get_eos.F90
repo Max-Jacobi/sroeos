@@ -74,12 +74,16 @@ CONTAINS
   ! 22 -> xl
   ! 23 -> albar
   ! 24 -> zlbar
+  ! 25 -> rad
+  ! 26 -> u
+  ! 27 -> meffn
+  ! 28 -> meffp
 
 
   SUBROUTINE get_eos_full(xrho,xtemp,xye,xenr,xprs,xent,xmuh,xmun,xmup,  &
             xdpdn,xdpdt,xdpdy,xdsdn,xdsdt,xdsdy,xdmuhdn,xdmuhdt,xdmuhdy, &
-            xxn,xxp,xxa,xxh,xxl,xabar,xzbar,xalbar,xzlbar,xrad,xu,&
-            keytemp,keyerr,rfeps)
+            xxn,xxp,xxa,xxh,xxl,xabar,xzbar,xalbar,xzlbar,xrad,xu,       &
+            xmeffn,xmeffp,keytemp,keyerr,rfeps)
 
     USE Table_Sizes_Mod
 
@@ -92,7 +96,7 @@ CONTAINS
     REAL(DP), INTENT(out)     :: xdmuhdn,xdmuhdt,xdmuhdy
     REAL(DP), INTENT(out)     :: xxa,xxn,xxp,xxh,xxl
     REAL(DP), INTENT(out)     :: xabar,xzbar,xalbar,xzlbar
-    REAL(DP), INTENT(out)     :: xrad,xu
+    REAL(DP), INTENT(out)     :: xrad,xu,xmeffn,xmeffp
     REAL(DP), INTENT(in)      :: rfeps
     INTEGER(I4B), INTENT(in)  :: keytemp
     INTEGER(I4B), INTENT(out) :: keyerr
@@ -222,6 +226,9 @@ CONTAINS
 
     xrad  = ff(25)
     xu    = ff(26)
+
+    xmeffn = ff(27)
+    xmeffp = ff(28)
 
   END SUBROUTINE get_eos_full
 

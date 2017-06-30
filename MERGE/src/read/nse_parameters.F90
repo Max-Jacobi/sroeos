@@ -26,6 +26,6 @@ MODULE NSE_MOD
   REAL(DP) :: nse_dmuhdd,  nse_dmuhdt,  nse_dmuhdy
   REAL(DP) :: nse_xn, nse_xp, nse_xa, nse_xh
   REAL(DP) :: nse_abar, nse_zbar, nse_xl, nse_albar, nse_zlbar
-  REAL(DP) :: nse_r, nse_u
+  REAL(DP) :: nse_r, nse_u, nse_meffn, nse_meffp
 
 END MODULE NSE_MOD

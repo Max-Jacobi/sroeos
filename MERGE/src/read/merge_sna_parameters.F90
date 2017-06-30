@@ -29,6 +29,6 @@ MODULE MERGE_SNA_MOD
     sna_merge_dsdn, sna_merge_dsdt, sna_merge_dsdy, &
     sna_merge_dpdn, sna_merge_dpdt, sna_merge_dpdy, &
     sna_merge_dedn, sna_merge_dedt, sna_merge_dedy, &
-    sna_merge_r,  sna_merge_u
+    sna_merge_r,  sna_merge_u, sna_merge_meffn, sna_merge_meffp
 
 END MODULE MERGE_SNA_MOD

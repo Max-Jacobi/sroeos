@@ -40,7 +40,8 @@ CONTAINS
     REAL(DP) :: rfeps
 
     REAL(DP) :: den,tem,ener,pres,entr
-    REAL(DP) :: abar,zbar,albar,zlbar,xa,xn,xp,xh,xl,rad,u
+    REAL(DP) :: abar,zbar,albar,zlbar,xa,xn,xp,xh,xl
+    REAL(DP) :: rad,u,meffn,meffp
     REAL(DP) :: denerdt,dpresdt,dentrdt,denerdd,dpresdd,dentrdd
     REAL(DP) :: denerdy,dpresdy,dentrdy
     REAL(DP) :: mu_p,mu_n,mu_hat,mu_e,mu_nu
@@ -66,7 +67,7 @@ CONTAINS
 !$OMP PRIVATE(nse_dmuhdd,nse_dmuhdt,nse_dmuhdy) &
 !$OMP PRIVATE(nse_xn,nse_xp,nse_xa,nse_xh,nse_xl) &
 !$OMP PRIVATE(nse_abar,nse_zbar,nse_albar,nse_zlbar) &
-!$OMP PRIVATE(nse_r,nse_u) &
+!$OMP PRIVATE(nse_r,nse_u,nse_meffn,nse_meffp) &
 !$OMP PRIVATE(sna_ener,sna_pres,sna_entr,sna_free) &
 !$OMP PRIVATE(sna_mu_hat,sna_mu_n,sna_mu_p,sna_mu_e) &
 !$OMP PRIVATE(sna_dpresdd,sna_dpresdt,sna_dpresdy) &
@@ -75,10 +76,11 @@ CONTAINS
 !$OMP PRIVATE(sna_dmuhdd,sna_dmuhdt,sna_dmuhdy) &
 !$OMP PRIVATE(sna_xn,sna_xp,sna_xa,sna_xh,sna_xl) &
 !$OMP PRIVATE(sna_abar,sna_zbar,sna_albar,sna_zlbar) &
-!$OMP PRIVATE(sna_r,sna_u) &
+!$OMP PRIVATE(sna_r,sna_u,sna_meffn,sna_meffp) &
 !$OMP PRIVATE(a_in,a_n,dadn,d2adn2,abar,zbar,albar,zlbar) &
-!$OMP PRIVATE(pres,entr,ener,mu_p,mu_n,mu_hat,mu_e,mu_nu,rad,u) &
-!$OMP PRIVATE(xa,xp,xn,xh,xl,dsdn,dsdt,dsdy,dpdn,dpdt,dpdy,dedn,dedt,dedy) &
+!$OMP PRIVATE(pres,entr,ener,mu_p,mu_n,mu_hat,mu_e,mu_nu) &
+!$OMP PRIVATE(rad,u,meffn,meffp,xa,xp,xn,xh,xl) &
+!$OMP PRIVATE(dsdn,dsdt,dsdy,dpdn,dpdt,dpdy,dedn,dedt,dedy) &
 !$OMP PRIVATE(gam,fac,cs2,dpdrhoe,dpderho) &
 !$OMP SHARED(final_tab)
     DO i_yp = yp_ini, yp_fin
@@ -116,6 +118,9 @@ CONTAINS
           nse_r    = nse_merge_r(i_n,i_t,i_yp)
           nse_u    = nse_merge_u(i_n,i_t,i_yp)
 
+          nse_meffn = nse_merge_meffn(i_n,i_t,i_yp)
+          nse_meffp = nse_merge_meffp(i_n,i_t,i_yp)
+
           nse_dentrdd = nse_merge_dsdn(i_n,i_t,i_yp)
           nse_dentrdt = nse_merge_dsdt(i_n,i_t,i_yp)
           nse_dentrdy = nse_merge_dsdy(i_n,i_t,i_yp)
@@ -147,6 +152,9 @@ CONTAINS
 
           sna_r    = sna_merge_r(i_n,i_t,i_yp)
           sna_u    = sna_merge_u(i_n,i_t,i_yp)
+
+          sna_meffn = sna_merge_meffn(i_n,i_t,i_yp)
+          sna_meffp = sna_merge_meffp(i_n,i_t,i_yp)
 
           sna_dentrdd = sna_merge_dsdn(i_n,i_t,i_yp)
           sna_dentrdt = sna_merge_dsdt(i_n,i_t,i_yp)
@@ -224,6 +232,9 @@ CONTAINS
           rad  = a_n*sna_r
           u    = a_n*sna_u
 
+          meffn  = a_n*sna_meffn + (one-a_n)*nse_meffn
+          meffp  = a_n*sna_meffp + (one-a_n)*nse_meffp
+
 !         get lepton+photon part of EoS
           IF (isnan(abar).OR.isnan(zbar).OR.isnan(albar).OR.isnan(zlbar)) THEN
             WRITE (*,"(A25,15ES14.6)") 'MERGE error at (y,T,n):', xe, temp, dens
@@ -251,6 +262,7 @@ CONTAINS
           final_tab(i_n,i_t,i_yp,9:13) = (/dedt,dpdrhoe,dpderho,gam,cs2/)
 
           final_tab(i_n,i_t,i_yp,14:15) = (/rad,u/)
+          final_tab(i_n,i_t,i_yp,25:26) = (/meffn,meffp/) 
  
 !         save final table nucleons, light and heavy nuclei properties
           final_tab(i_n,i_t,i_yp,16:24) = &
@@ -318,6 +330,8 @@ CONTAINS
       deallocate(sna_merge_zlbar)
       deallocate(sna_merge_r   )
       deallocate(sna_merge_u   )
+      deallocate(sna_merge_meffn)
+      deallocate(sna_merge_meffp)
       deallocate(sna_merge_dsdn)
       deallocate(sna_merge_dsdt)
       deallocate(sna_merge_dsdy)
@@ -346,6 +360,8 @@ CONTAINS
       deallocate(nse_merge_zlbar)
       deallocate(nse_merge_r   )
       deallocate(nse_merge_u   )
+      deallocate(nse_merge_meffn)
+      deallocate(nse_merge_meffp)
       deallocate(nse_merge_dsdn)
       deallocate(nse_merge_dsdt)
       deallocate(nse_merge_dsdy)

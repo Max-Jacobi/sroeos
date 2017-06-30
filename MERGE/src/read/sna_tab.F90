@@ -37,7 +37,8 @@ CONTAINS
     REAL(DP) :: rfeps
 
     REAL(DP) :: den,tem,ener,pres,entr
-    REAL(DP) :: abar,zbar,albar,zlbar,xa,xn,xp,xh,xl,rad,u
+    REAL(DP) :: abar,zbar,albar,zlbar,xa,xn,xp,xh,xl
+    REAL(DP) :: rad,u,meffn,meffp
     REAL(DP) :: denerdt,dpresdt,dentrdt,denerdd,dpresdd,dentrdd
     REAL(DP) :: denerdy,dpresdy,dentrdy
     REAL(DP) :: mu_p,mu_n,mu_hat,mu_e,mu_nu
@@ -94,6 +95,8 @@ CONTAINS
     ALLOCATE(sna_merge_zlbar(n_fin,t_fin,yp_fin))
     ALLOCATE(sna_merge_r   (n_fin,t_fin,yp_fin))
     ALLOCATE(sna_merge_u   (n_fin,t_fin,yp_fin))
+    ALLOCATE(sna_merge_meffn(n_fin,t_fin,yp_fin))
+    ALLOCATE(sna_merge_meffp(n_fin,t_fin,yp_fin))
     ALLOCATE(sna_merge_dsdn(n_fin,t_fin,yp_fin))
     ALLOCATE(sna_merge_dsdt(n_fin,t_fin,yp_fin))
     ALLOCATE(sna_merge_dsdy(n_fin,t_fin,yp_fin))
@@ -119,6 +122,8 @@ CONTAINS
     sna_merge_zlbar = zero
     sna_merge_r    = zero
     sna_merge_u    = zero
+    sna_merge_meffn = zero
+    sna_merge_meffp = zero
     sna_merge_dsdn = zero
     sna_merge_dsdt = zero
     sna_merge_dsdy = zero
@@ -139,10 +144,11 @@ CONTAINS
 !$OMP PRIVATE(sna_dmuhdd,sna_dmuhdt,sna_dmuhdy) &
 !$OMP PRIVATE(sna_xn,sna_xp,sna_xa,sna_xh,sna_xl) &
 !$OMP PRIVATE(sna_abar,sna_zbar,sna_albar,sna_zlbar) &
-!$OMP PRIVATE(sna_r,sna_u) &
+!$OMP PRIVATE(sna_r,sna_u,sna_meffn,sna_meffp) &
 !$OMP FIRSTPRIVATE(keytemp,keyerr,rfeps) &
 !$OMP PRIVATE(abar,zbar,albar,zlbar) &
-!$OMP PRIVATE(pres,entr,ener,mu_p,mu_n,mu_hat,mu_e,mu_nu,rad,u) &
+!$OMP PRIVATE(pres,entr,ener,mu_p,mu_n,mu_hat,mu_e,mu_nu) &
+!$OMP PRIVATE(rad,u,meffn,meffp) &
 !$OMP PRIVATE(xa,xp,xn,xh,xl) &
 !$OMP PRIVATE(dsdn,dsdt,dsdy,dpdn,dpdt,dpdy,dedn,dedt,dedy) &
 !$OMP PRIVATE(gam,fac,cs2,dpdrhoe,dpderho) &
@@ -158,7 +164,7 @@ CONTAINS
 !$OMP SHARED(sna_merge_zbar,sna_merge_abar,sna_merge_zlbar,sna_merge_albar) &
 !$OMP SHARED(sna_merge_dsdn,sna_merge_dsdt,sna_merge_dsdy) &
 !$OMP SHARED(sna_merge_dpdn,sna_merge_dpdt,sna_merge_dpdy) &
-!$OMP SHARED(sna_merge_r,sna_merge_u)
+!$OMP SHARED(sna_merge_r,sna_merge_u,sna_merge_meffn,sna_merge_meffp)
     DO i_yp = yp_ini, yp_fin
       xe = Yp_min + dble(i_Yp-1)*Yp_step
       WRITE (*,*) 'SNA loop. Yp = ', xe
@@ -178,7 +184,7 @@ CONTAINS
             sna_dmuhdd,sna_dmuhdt,sna_dmuhdy,    &
             sna_xn,sna_xp,sna_xa,sna_xh,sna_xl,  &
             sna_abar,sna_zbar,sna_albar,sna_zlbar, &
-            sna_r,sna_u,keytemp,keyerr,rfeps)
+            sna_r,sna_u,sna_meffn,sna_meffp,keytemp,keyerr,rfeps)
 
             abar = sna_xn+sna_xp+sna_xa/four
             if (sna_abar  > 0.d0) &
@@ -232,6 +238,8 @@ CONTAINS
           zlbar = sna_zlbar
           rad   = sna_r
           u     = sna_u
+          meffn = sna_meffn
+          meffp = sna_meffp
 
 !         derivatives
 !         ds/dn, ds/dt, ds/dy
@@ -267,8 +275,11 @@ CONTAINS
             sna_merge_albar(i_n,i_t,i_yp)  = zero
             sna_merge_zlbar(i_n,i_t,i_yp)  = zero
 
-            sna_merge_r(i_n,i_t,i_yp)    = zero
-            sna_merge_u(i_n,i_t,i_yp)    = zero
+            sna_merge_r(i_n,i_t,i_yp)    = rad
+            sna_merge_u(i_n,i_t,i_yp)    = u
+
+            sna_merge_meffn(i_n,i_t,i_yp)    = meffn
+            sna_merge_meffp(i_n,i_t,i_yp)    = meffp
 
             sna_merge_dsdn(i_n,i_t,i_yp)  = dsdn
             sna_merge_dsdt(i_n,i_t,i_yp)  = dsdt
@@ -302,6 +313,7 @@ CONTAINS
                                         (/xn,xp,xa,xh,abar,zbar,xl,albar,zlbar/)
 
           final_tab(i_n,i_t,i_yp,14:15) = (/rad,u/)
+          final_tab(i_n,i_t,i_yp,25:26) = (/meffn,meffp/)
 
 !         save final table P,s,e and chemical potentials
           pres = log10(pres) - log10(press_cgs_to_EOS)

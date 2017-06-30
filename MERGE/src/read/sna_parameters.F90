@@ -28,6 +28,6 @@ MODULE SNA_MOD
   REAL(DP) :: sna_dmuhdd,  sna_dmuhdt,  sna_dmuhdy
   REAL(DP) :: sna_xn, sna_xp, sna_xa, sna_xh
   REAL(DP) :: sna_abar, sna_zbar, sna_xl, sna_albar, sna_zlbar
-  REAL(DP) :: sna_r,sna_u
+  REAL(DP) :: sna_r, sna_u, sna_meffn, sna_meffp
 
 END MODULE SNA_MOD

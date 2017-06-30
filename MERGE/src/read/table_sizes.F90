@@ -47,10 +47,10 @@ MODULE Table_Sizes_Mod
 !$threadprivate(energy_shift,t_max_hack)
 
 ! number of variables on each table
-  INTEGER(I4B) :: nvars     = 26
-  INTEGER(I4B) :: sna_nvars = 26
-  INTEGER(I4B) :: nse_nvars = 26
-  INTEGER(I4B) :: nvars_tab = 26
+  INTEGER(I4B) :: nvars     = 28
+  INTEGER(I4B) :: sna_nvars = 28
+  INTEGER(I4B) :: nse_nvars = 28
+  INTEGER(I4B) :: nvars_tab = 28
 
 ! allocate table sizes
   REAL(DP), DIMENSION(:,:,:,:), ALLOCATABLE :: sna_table, nse_table

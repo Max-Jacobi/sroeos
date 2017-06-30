@@ -103,10 +103,10 @@ obj/%.o: read/%.F90
 obj/%.o: read_input/%.F90
 	$(FC) $(OPTION) -c $< -o $@ $(MODDIR)
 
-obj/kind_types.o: ../../SNA/src/modules/kind_types.f90
+obj/kind_types.o: read/kind_types.f90
 	$(FC) $(OPTION) -c $< -o $@ $(MODDIR)
 
-obj/physical_constants.o: ../../SNA/src/modules/physical_constants.f90
+obj/physical_constants.o: read/physical_constants.f90
 	$(FC) $(OPTION) -c $< -o $@ $(MODDIR)
 
 obj/h5_writer.o: ../src/h5_writer.F90

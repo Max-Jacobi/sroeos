@@ -29,6 +29,6 @@ MODULE MERGE_NSE_MOD
     nse_merge_dsdn, nse_merge_dsdt, nse_merge_dsdy, &
     nse_merge_dpdn, nse_merge_dpdt, nse_merge_dpdy, &
     nse_merge_dedn, nse_merge_dedt, nse_merge_dedy, &
-    nse_merge_r, nse_merge_u
+    nse_merge_r, nse_merge_u, nse_merge_meffn, nse_merge_meffp
 
 END MODULE MERGE_NSE_MOD
