@@ -4,6 +4,13 @@ CXXFLAGS   = -O3 -g -qopenmp
 OPTION     = -O3 -qopenmp 
 LDFLAGS    = --static
 
+# Note regarding static linking: We recommend it in particular with
+# compilers that are not installed system wide.	 However, depending on
+# your system, you may need to install development/static packages for
+# compilers and libraries. If you get error messages during linking,
+# then try removing the "--static" flag in LDFLAGS.
+
+# change HDF5DIR to your installation
 HDF5DIR=/home/cott/opt/hdf5-1.10.1-intel
 HDF5LIBS=-L$(HDF5DIR)/lib/ -lhdf5_fortran -lhdf5 -lz 
 HDF5INCS=-I$(HDF5DIR)/include/

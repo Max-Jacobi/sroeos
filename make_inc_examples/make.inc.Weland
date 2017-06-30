@@ -5,7 +5,7 @@ F95        = gfortran
 CXX	   = g++
 CXXFLAGS   = -O3 -g
 OPTION     = -g -fopenmp -finit-local-zero -ffree-line-length-132
-LDFLAGS    = -static
+LDFLAGS    = 
 
 HDF5DIR=/usr/lib/x86_64-linux-gnu/hdf5/serial
 HDF5LIBS=-L$(HDF5DIR) -lhdf5_fortran -lhdf5

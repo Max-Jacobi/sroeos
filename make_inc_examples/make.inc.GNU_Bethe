@@ -4,6 +4,12 @@ CXXFLAGS   = -O3 -g
 OPTION     = -O3 -g -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132
 LDFLAGS    = -static
 
+# Note regarding static linking: We recommend it, but depending
+# on your system, you may need to install development/static
+# packages for compilers and libraries. If you get error messages
+# during linking, then try removing the "-static" flag in 
+# LDFLAGS.
+
 HDF5DIR=/home/cott/opt/hdf5-1.10.0-patch1-gcc5.2
 HDF5LIBS=-L$(HDF5DIR)/lib -lhdf5 -lhdf5_fortran -lhdf5 -lz -ldl
 HDF5INCS=-I$(HDF5DIR)/include
