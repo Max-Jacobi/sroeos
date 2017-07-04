@@ -3,7 +3,7 @@
 ! Set table file name base
 !
   make_hdf5_table = .true.,
-  write_solutions_to_file = .false.,
+  write_solutions_to_file = .true.,
   filename_base   = "LS220",       ! base for HDF5 table names
   output_directory= "EOS_LS220",   ! directory for ascii output files
 /
@@ -40,7 +40,7 @@
 ! Determine whether surface fitting should be calculated explicitly
 !  or use pre-calculated fit values.
 !  Pre-calculated values must be given in this list if fit_surface = .true.
-!  For Skyrme_parametrization_type  = 1 or 3
+!  For Skyrme_parametrization_type  = 1
 !  must set fit_surface = .true.
 !
   fit_surface    = .false.
