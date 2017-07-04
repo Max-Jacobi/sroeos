@@ -292,7 +292,7 @@ CONTAINS
     log10_n_po = log10(n*X_p)
     log10_u = -290.0D0
 
-    IF (ISNAN(log10_n_no) .OR. ISNAN(log10_n_po)) THEN
+    IF (ieee_is_nan(log10_n_no) .OR. ieee_is_nan(log10_n_po)) THEN
       S(1) = 1.D100
       RETURN
     ENDIF
@@ -355,7 +355,7 @@ CONTAINS
     log10_n_no = log10(n*X_p)
     log10_u = -290.0D0
 
-    IF (ISNAN(log10_n_no) .OR. ISNAN(log10_n_po)) THEN
+    IF (ieee_is_nan(log10_n_no) .OR. ieee_is_nan(log10_n_po)) THEN
       S(1) = 1.D100
       RETURN
     ENDIF
@@ -419,7 +419,7 @@ CONTAINS
     log10_n_po = log10(n*X_p)
     log10_u = -290.0D0
 
-    IF (ISNAN(log10_n_no) .OR. ISNAN(log10_n_po)) THEN
+    IF (ieee_is_nan(log10_n_no) .OR. ieee_is_nan(log10_n_po)) THEN
       JAC(1,1) = ZERO
       RETURN
     ENDIF
@@ -507,7 +507,7 @@ CONTAINS
     log10_n_no = log10(n*X_p)
     log10_u = -290.0D0
 
-    IF (ISNAN(log10_n_no) .OR. ISNAN(log10_n_po)) THEN
+    IF (ieee_is_nan(log10_n_no) .OR. ieee_is_nan(log10_n_po)) THEN
       JAC(1,1) = ZERO
       RETURN
     ENDIF

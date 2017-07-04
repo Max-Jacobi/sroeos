@@ -189,8 +189,8 @@ MODULE Read_Skyrme_Coefficients_Mod
       CASE (.FALSE.)
         CONTINUE
       CASE(.TRUE.)
-        IF (non_local_terms>2) STOP ' High_density_stiffening only implemented &
-                                    for non_local_terms = 1.'
+        IF (non_local_terms>2) &
+         STOP ' High_density_stiffening only implemented for non_local_terms = 1.'
         READ(10,NML=SKYRME_STIFFENING)
 
         CALL SATURATION_DENSITY(n_sat,e_bind)

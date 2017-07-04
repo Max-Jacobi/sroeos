@@ -84,6 +84,7 @@ CONTAINS
   SUBROUTINE SURFACE_FIT(m, n, x, fvec, iflag)
 
     USE Make_Tables_Mod, ONLY : output_directory
+    USE, INTRINSIC :: IEEE_ARITHMETIC
 
     IMPLICIT NONE
 
@@ -140,11 +141,11 @@ CONTAINS
 
       fvec(k) = (surface_tension_fit - surface_tension)/surface_tension
 
-      IF ( Surface_tension == ZERO.or.ISNAN(Surface_tension) ) THEN
+      IF ( Surface_tension == ZERO.or.ieee_is_nan(Surface_tension) ) THEN
         !WRITE (*,*) I, J, H, NUM, DEN
         IF (Surface_tension == ZERO) STOP &
                     'ERROR EVALUATING FVEC(K) AND/OR Surface_tension'
-        IF (ISNAN(Surface_tension))  STOP &
+        IF (ieee_is_nan(Surface_tension))  STOP &
                     'ERROR: Surface_tension IS NOT A NUMBER'
       ENDIF
 

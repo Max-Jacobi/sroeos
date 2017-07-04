@@ -32,6 +32,7 @@ CONTAINS
                Hbarc_Square, PI, TWO_PI_SQUARE, &
                log10_dens_min, log10_dens_max, dens_min, dens_max, &
                Mass_n, Mass_p, Neut_Prot_Mass_Diff
+    USE, INTRINSIC :: IEEE_ARITHMETIC
 
     IMPLICIT NONE
 
@@ -66,7 +67,7 @@ CONTAINS
     IF (log10_n_n>log10_n_p+16.D0) THEN
       n = n_n
       y = n_p/n
-      IF (ISNAN(y)) y = zero
+      IF (ieee_is_nan(y)) y = zero
       n_p = eff_n_p
     ELSEIF (log10_n_n<log10_n_p-16.D0) THEN
       n = n_p

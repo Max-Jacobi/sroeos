@@ -18,8 +18,6 @@
 ! Skyrme parametrization type
 !  0 - Standard Skyrme
 !  1 - Simplified Skyrme
-!  2 - Standard Skyrme with high density modification (not implemented yet)
-!  3 - Simplified Skyrme with high density modification (not implemented yet)
 !
   Skyrme_parametrization_type  = 1,
   non_local_terms              = 1,

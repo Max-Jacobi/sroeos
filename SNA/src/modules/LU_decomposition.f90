@@ -60,6 +60,8 @@ CONTAINS
 
   SUBROUTINE MATLUD(A,LU,N,IPVT)
 
+    USE, INTRINSIC :: IEEE_ARITHMETIC
+
     IMPLICIT NONE
 
 !   Parameters
@@ -83,13 +85,14 @@ CONTAINS
     INTEGER (I4B), PARAMETER ::  NMAX = 100
     REAL (DP) ::  MAXVAL(NMAX)
 
+
 !   Check if all elements on the matrix have real & finite values
     DO I = 1, N
       DO J = 1, N
         MIJ = A(I,J)
         IF (MIJ > 1.D100) MIJ =  1.D100
         IF (MIJ <-1.D100) MIJ = -1.D100
-        IF (ISNAN(MIJ)) MIJ = 0.D0
+        IF (ieee_is_nan(MIJ)) MIJ = 0.D0
         A(I,J) = MIJ
       ENDDO
     ENDDO

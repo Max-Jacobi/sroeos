@@ -18,6 +18,7 @@ MODULE Find_Non_Uniform_Matter_Derivatives_Mod
   USE Kind_Types_Mod, ONLY : DP, I4B
   USE Physical_Constants_Mod, ONLY : ZERO, HALF, ONE, TWO, FOUR, v_alpha
   USE LU_decomposition
+  USE, INTRINSIC :: IEEE_ARITHMETIC
 
   IMPLICIT NONE
 
@@ -167,7 +168,7 @@ CONTAINS
 !    to get derivatives w.r.t. density n
 !
     CALL MLUSLV(dAi_dxj_LU,dxi_dyj(1:5,1),dAi_dyj(1:5,1),ipvt,5)
-    WHERE (isnan(dxi_dyj)) dxi_dyj = 1.d-290
+    WHERE (ieee_is_nan(dxi_dyj)) dxi_dyj = 1.d-290
 
     DU_DN      = dxi_dyj(1,1)
     Dy_i_DN    = dxi_dyj(2,1)
@@ -179,7 +180,7 @@ CONTAINS
 !    to get derivatives w.r.t. temperature T
 !
     CALL MLUSLV(dAi_dxj_LU,dxi_dyj(1:5,2),dAi_dyj(1:5,2),ipvt,5)
-    WHERE (isnan(dxi_dyj)) dxi_dyj = 1.d-290
+    WHERE (ieee_is_nan(dxi_dyj)) dxi_dyj = 1.d-290
 
     DU_DT      = dxi_dyj(1,2)
     Dy_i_DT    = dxi_dyj(2,2)
@@ -192,7 +193,7 @@ CONTAINS
 !
     CALL MLUSLV(dAi_dxj_LU,dxi_dyj(1:5,3),dAi_dyj(1:5,3),ipvt,5)
 
-    WHERE (isnan(dxi_dyj)) dxi_dyj = 1.d-290
+    WHERE (ieee_is_nan(dxi_dyj)) dxi_dyj = 1.d-290
 
     DU_DY      = dxi_dyj(1,3)
     Dy_i_DY    = dxi_dyj(2,3)

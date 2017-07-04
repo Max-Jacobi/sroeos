@@ -411,7 +411,7 @@ CONTAINS
       RETURN
     ENDIF
 
-    IF (ISNAN(F_TR) .OR. ISNAN(F_SC)) THEN
+    IF (ieee_is_nan(F_TR) .OR. ieee_is_nan(F_SC)) THEN
       error = -7
       RETURN
     ENDIF

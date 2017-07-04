@@ -122,7 +122,7 @@ CONTAINS
       CALL CHECK_RANGE_INT('steps_in_Yp',steps_in_Yp,2,200)
       Yp_step = (Yp_max - Yp_min)/DBLE(steps_in_Yp-1)
     ELSE
-       STOP "Need at least one of 'Yp_spacing' or 'steps_in_Yp' to be given!"
+       STOP "Need at least one of Yp_spacing or steps_in_Yp to be given!"
     ENDIF
 
     Yp_ini = 1
@@ -157,8 +157,8 @@ CONTAINS
       CALL CHECK_RANGE_DP('steps_per_decade_in_n',&
                            steps_per_decade_in_n,5.D0,100.D0)
     ELSE
-       STOP "Need at least one of 'log10n_spacing' or 'steps_per_decade_in_n' &
-              to be given!"
+      STOP &
+         "Need at least one of log10n_spacing or steps_per_decade_in_n to be given!"
     ENDIF
 
     n_ini = 1
@@ -188,8 +188,7 @@ CONTAINS
       CALL CHECK_RANGE_DP('steps_per_decade_in_T',&
                            steps_per_decade_in_T,5.D0,100.D0)
     ELSE
-       STOP "Need at least one of 'log10T_spacing' or 'steps_per_decade_in_T' &
-              to be given!"
+       STOP "Need at least one of 'log10T_spacing' or 'steps_per_decade_in_T' to be given!"
     ENDIF
 
     t_ini = 1

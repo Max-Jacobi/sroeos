@@ -1,7 +1,7 @@
 # Include compiler and flags
 
  F95        = ftn
- OPTION     = -O1 -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132
+ OPTION     = -O3 -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132
 
 HDF5DIR=/opt/cray/hdf5/default/gnu/5.1/
 HDF5LIBS=-L$(HDF5DIR)/lib/ -lhdf5_fortran -lhdf5

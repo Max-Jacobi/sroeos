@@ -55,11 +55,11 @@ CONTAINS
           DEN = DXI**(-P1)+P3+(ONE-DXI)**(-P1)
           FUNC = H*NUM/DEN
           k = k + 1
-          IF (FTABLE(I,J) == ZERO.or.ISNAN(FTABLE(I,J))) THEN
+          IF (FTABLE(I,J) == ZERO.or.ieee_is_nan(FTABLE(I,J))) THEN
             ! WRITE (*,*) I, J, H, NUM, DEN
             IF (FTABLE(I,J) == ZERO) &
                           STOP 'ERROR EVALUATING FVEC(K) AND/OR FTABLE(I,J)'
-            IF (ISNAN(FTABLE(I,J)))  &
+            IF (ieee_is_nan(FTABLE(I,J)))  &
                           STOP 'ERROR: FTABLE(I,J) IS NOT A NUMBER'
           ELSE
             fvec(k) = (FUNC-FTABLE(I,J))/FUNC

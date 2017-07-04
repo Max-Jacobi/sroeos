@@ -82,6 +82,7 @@ CONTAINS
 
 !   set proton fraction from 0.50 down to minimum to be determined every 0.02
     prot_frac_step = 2
+    tol = 1.d-3
 
     DO j = 100, 1, - prot_frac_step
       prot_frac = DBLE(j)/200.d0

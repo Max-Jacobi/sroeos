@@ -270,8 +270,8 @@ CONTAINS
     IF (x_lgcl .AND. A<10.D0) THEN
       WRITE (*,"(A36,3ES16.7,A10,ES16.7)") &
         'WARNING! A < 10 FOR (Yp,T,n) = ', Yp, T, n, ' A = ', A
-      WRITE (*,"(A66)") ' IGNORED SOLUTION BECAUSE &
-                          HEAVY NUCLEI MASS NUMBER IS TOO SMALL!'
+      WRITE (*,"(A66)") &
+       ' IGNORED SOLUTION BECAUSE HEAVY NUCLEI MASS NUMBER IS TOO SMALL!'
       x_lgcl = .FALSE.
     ENDIF
 
@@ -555,7 +555,7 @@ CONTAINS
     log10_n_po = X(2)
     log10_u = X(3)
 
-    IF (ISNAN(log10_n_no) .OR. ISNAN(log10_n_po) .OR. ISNAN(log10_u)) THEN
+    IF (ieee_is_nan(log10_n_no) .OR. ieee_is_nan(log10_n_po) .OR. ieee_is_nan(log10_u)) THEN
       S_eq = 1.D100
       RETURN
     ENDIF
@@ -605,7 +605,7 @@ CONTAINS
     log10_n_po = x1(2)
     log10_u = x1(3)
 
-    IF (ISNAN(log10_n_no) .OR. ISNAN(log10_n_po) .OR. ISNAN(log10_u)) THEN
+    IF (ieee_is_nan(log10_n_no) .OR. ieee_is_nan(log10_n_po) .OR. ieee_is_nan(log10_u)) THEN
       JAC(1:ldr,1:3) = ZERO
       RETURN
     ENDIF

@@ -4,8 +4,8 @@
 !
   make_hdf5_table = .true.,
   write_solutions_to_file = .false.,
-  filename_base   = "SkT1",       ! base for HDF5 table names
-  output_directory= "EOS_SkT1",   ! directory for ascii output files
+  filename_base   = "SkT1star",       ! base for HDF5 table names
+  output_directory= "EOS_SkT1star",   ! directory for ascii output files
 /
 
 &SKYRME_TYPE

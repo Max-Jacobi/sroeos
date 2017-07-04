@@ -19,6 +19,7 @@ Module Save_to_Table_Mod
   USE Physical_Constants_Mod, ONLY : ZERO, ONE, TWO
   USE Allocatable_Tables_Mod
   USE Main_output_Mod
+  USE, INTRINSIC :: IEEE_ARITHMETIC
 
   IMPLICIT NONE
 
@@ -62,14 +63,14 @@ CONTAINS
     abar_tab(i_n, i_t, i_y) = A_heavy
     zbar_tab(i_n, i_t, i_y) = Z_heavy
 
-    if (isnan(A_heavy) .OR. A_heavy < ONE) abar_tab(i_n, i_t, i_y) = 1.d0
-    if (isnan(Z_heavy) .OR. Z_heavy < Yp ) zbar_tab(i_n, i_t, i_y) = Yp
+    if (ieee_is_nan(A_heavy) .OR. A_heavy < ONE) abar_tab(i_n, i_t, i_y) = 1.d0
+    if (ieee_is_nan(Z_heavy) .OR. Z_heavy < Yp ) zbar_tab(i_n, i_t, i_y) = Yp
 
     u_tab(i_n, i_t, i_y) = u
     r_tab(i_n, i_t, i_y) = r
 
-    if (isnan(u)) u_tab(i_n,i_t,i_y) = 0.d0
-    if (isnan(r)) r_tab(i_n,i_t,i_y) = 0.d0
+    if (ieee_is_nan(u)) u_tab(i_n,i_t,i_y) = 0.d0
+    if (ieee_is_nan(r)) r_tab(i_n,i_t,i_y) = 0.d0
 
   end subroutine save_to_table
 

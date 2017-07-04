@@ -85,6 +85,7 @@ MODULE Critical_Point_Mod
     deallocate(RJAC, RWORK, RCDWRK, ICDWRK, QRWORK, SCALEX)
 !   chech whether solution x1 found is actually a solution to eq being solved.
 !   sotemimes output for x1 is not a solution, but a point where nlwleq stalled.
+    flag = 0
     CALL critical_point( x1, r, n, flag )
 
     lgt = .FALSE.

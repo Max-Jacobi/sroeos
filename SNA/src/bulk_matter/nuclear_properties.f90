@@ -17,6 +17,7 @@
 MODULE Nuclear_Matter_Properties_Mod
 
   USE Kind_Types_Mod, ONLY : DP
+  USE, INTRINSIC :: IEEE_ARITHMETIC
 
   IMPLICIT NONE
 

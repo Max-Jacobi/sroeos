@@ -394,16 +394,16 @@ CONTAINS
       minutes = mod(int(wtime),3600)/60
       seconds = mod(mod(int(wtime),3600),60)
 !$OMP CRITICAL
-      WRITE (9,"('Thread',1i4,' computed EOS for y = ',1F8.6, &
-      ' in ',1I4,':',1I2.2,':',1I2.2)") thread, Yp, hours, minutes, seconds
+      WRITE (9,"('Thread',1i4,' computed EOS for y = ',1F8.6, ' in ',1I4,':',1I2.2,':',1I2.2)") &
+          thread, Yp, hours, minutes, seconds
 !$OMP END CRITICAL
 #else
       call cpu_time ( xtime )
       hours   = int(xtime)/3600
       minutes = mod(int(xtime),3600)/60
       seconds = mod(mod(int(xtime),3600),60)
-      WRITE (9,"('Thread',1i4,' computed EOS for y = ',1F8.6, &
-      ' in',1I3,':',1I2.2,':',1I2.2)") thread, Yp, hours, minutes, seconds
+      WRITE (9,"('Thread',1i4,' computed EOS for y = ',1F8.6, ' in',1I3,':',1I2.2,':',1I2.2)") 
+          thread, Yp, hours, minutes, seconds
 #endif
     ENDDO
 !$OMP end parallel do
