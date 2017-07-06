@@ -203,6 +203,11 @@ The SRO EOS code requires the following software on your system:
    solving for the EOS will be very slow. Make sure to look up the
    correct compiler flag to enable OpenMP support during compilation.
 
+   Important note: The SRO EOS uses some Fortran 2003 features such as
+   IEEE Arithmetic and ISO C Bindings. Because of this, recent compiler versions
+   are necessary. For \verb|gcc|, this is any version
+   $\ge 5$.
+   
  \item The \verb|HDF5| library, available at
    \url{https://support.hdfgroup.org/HDF5/}. It must be compiled with
    Fortran 90+ support.
@@ -614,7 +619,7 @@ large (\verb+A00+$\gtrsim120$), problems can occur in the EOS
 calculation.
 
 
-
+\newpage
 \bigskip
 \textbf{The \emph{optional} \texttt{\color{cyan} SKYRME\_STIFFENING}
   Namelist}
