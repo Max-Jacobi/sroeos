@@ -5,7 +5,7 @@ Reference:
 
 Schneider, Roberts, Ott 2017,
 Submitted to Physical Review C,
-arXiv: [to be filled in]
+arXiv: https://arxiv.org/abs/1707.01527
 
 License: GPLv3 (see file LICENSE)
 
@@ -79,6 +79,3 @@ SROEOS@stellarcollapse.org. Please do note that our resources are
 limited and we may not be able to help with basic linux/unix and
 compilation questions. We recommend you ask a friendly colleague
 at your institution for help with such problems.
-
-
-
