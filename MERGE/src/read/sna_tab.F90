@@ -136,7 +136,11 @@ CONTAINS
 
     keytemp = 1
 
-!$OMP PARALLEL DO SCHEDULE(dynamic,1) &
+!$OMP PARALLEL DO SCHEDULE(dynamic,1) DEFAULT(none) &
+!$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min) &
+!$OMP FIRSTPRIVATE(n_ini,n_fin,steps_per_decade_in_n,Log10n_min) &
+!$OMP FIRSTPRIVATE(T_ini,T_fin,steps_per_decade_in_T,Log10T_min) &
+!$OMP FIRSTPRIVATE(Log10nt_min,Log10nt_max,energy_shift) &
 !$OMP PRIVATE(xe,i_t,temp,temp_cgs,i_n,dens,dens_cgs) &
 !$OMP PRIVATE(sna_ener,sna_pres,sna_entr,sna_mu_hat,sna_mu_n,sna_mu_p) &
 !$OMP PRIVATE(sna_dpresdd,sna_dpresdt,sna_dpresdy) &
@@ -187,11 +191,11 @@ CONTAINS
             sna_r,sna_u,sna_meffn,sna_meffp,keytemp,keyerr,rfeps)
 
             abar = sna_xn+sna_xp+sna_xa/four
-            if (sna_abar  > 0.d0) &
+            if (sna_xh  > 0.d0) &
               abar = sna_xn+sna_xp+sna_xa/four+sna_xh/sna_abar
-            if (sna_albar > 0.d0) &
+            if (sna_xl > 0.d0) &
               abar = sna_xn+sna_xp+sna_xa/four+sna_xl/sna_albar
-            if (sna_abar > 0.d0 .and. sna_albar > 0.d0) &
+            if (sna_xh > 0.d0 .and. sna_xl > 0.d0) &
             abar = sna_xn+sna_xp+sna_xa/four+sna_xh/sna_abar+sna_xl/sna_albar
 
             abar = one/abar
@@ -241,6 +245,11 @@ CONTAINS
           meffn = sna_meffn
           meffp = sna_meffp
 
+          IF (xh == zero) THEN
+            abar = 1.0d0
+            zbar = xe
+          ENDIF
+
 !         derivatives
 !         ds/dn, ds/dt, ds/dy
           dsdn = sna_dentrdd + ele_dentrdd*entropy_cgs_to_EOS/rho_cgs_to_EOS
@@ -272,14 +281,14 @@ CONTAINS
             sna_merge_abar(i_n,i_t,i_yp)  = abar
             sna_merge_zbar(i_n,i_t,i_yp)  = zbar
             sna_merge_xl(i_n,i_t,i_yp)    = zero
-            sna_merge_albar(i_n,i_t,i_yp)  = zero
-            sna_merge_zlbar(i_n,i_t,i_yp)  = zero
+            sna_merge_albar(i_n,i_t,i_yp) = 1.d0
+            sna_merge_zlbar(i_n,i_t,i_yp) = xe
 
             sna_merge_r(i_n,i_t,i_yp)    = rad
             sna_merge_u(i_n,i_t,i_yp)    = u
 
-            sna_merge_meffn(i_n,i_t,i_yp)    = meffn
-            sna_merge_meffp(i_n,i_t,i_yp)    = meffp
+            sna_merge_meffn(i_n,i_t,i_yp) = meffn
+            sna_merge_meffp(i_n,i_t,i_yp) = meffp
 
             sna_merge_dsdn(i_n,i_t,i_yp)  = dsdn
             sna_merge_dsdt(i_n,i_t,i_yp)  = dsdt

@@ -127,7 +127,11 @@ CONTAINS
     x_po = (ONE-u)*exc_v_alpha*n_po / n
     x_alpha = (ONE-u)*FOUR*n_alpha / n
     x_heavy = (n_ni+n_pi)*ten**log10_u/n
-    IF (x_heavy < 1.d-50) x_heavy = zero
+    IF (x_heavy < 1.d-50) THEN
+      x_heavy = zero
+      A_heavy = zero
+      Z_heavy = zero
+    ENDIF
 
   IF (IS_TEST) CALL PRINT_TEST( n, T, Yp, F_o, F_i, F_alpha, F_TR, F_SC, &
                    x_no, x_po, n_ni, n_pi, x_alpha, x_heavy, &

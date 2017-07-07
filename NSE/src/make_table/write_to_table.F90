@@ -117,7 +117,7 @@ CONTAINS
     ierr = ierr + h5_output_double(file_id,"e",e_tab,dims3,rank)
 
     mun_tab = mun_tab - neutron_mass_MeV
-    mup_tab = mun_tab - neutron_mass_MeV
+    mup_tab = mup_tab - neutron_mass_MeV
 
     ierr = ierr + h5_output_double(file_id,"muh",muh_tab,dims3,rank)
     ierr = ierr + h5_output_double(file_id,"mun",mun_tab,dims3,rank)
@@ -145,7 +145,7 @@ CONTAINS
     ierr = ierr + h5_output_double(file_id,"xp",xp_tab,dims3,rank)
     ierr = ierr + h5_output_double(file_id,"xa",xa_tab,dims3,rank)
     ierr = ierr + h5_output_double(file_id,"xh",xh_tab,dims3,rank)
-    ierr = ierr + h5_output_double(file_id,"xl",xh_tab,dims3,rank)
+    ierr = ierr + h5_output_double(file_id,"xl",xl_tab,dims3,rank)
 
   !  ierr = ierr + h5_output_int(file_id,"error",ierror,dims3,rank)
 

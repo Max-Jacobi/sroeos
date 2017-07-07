@@ -453,7 +453,9 @@ CONTAINS
         call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, alltables(:,:,:,21),dims3,error)
         call h5dclose_f(dset_id,error)
         accerr=accerr+error
-        alltables(:,:,:,22:24) = 0.d0
+        alltables(:,:,:,22) = 0.d0
+        alltables(:,:,:,23) = 1.d-10
+        alltables(:,:,:,24) = 1.d-10
         call h5dopen_f(file_id, "r", dset_id, error)
         call h5dread_f(dset_id, H5T_NATIVE_DOUBLE, alltables(:,:,:,25),dims3,error)
         call h5dclose_f(dset_id,error)

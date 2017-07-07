@@ -57,7 +57,32 @@ CONTAINS
 
     keytemp = 1
 
-!$OMP PARALLEL DO SCHEDULE(dynamic,1) &
+!$OMP PARALLEL DO SCHEDULE(dynamic,1) DEFAULT (none) &
+!$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min) &
+!$OMP FIRSTPRIVATE(n_ini,n_fin,steps_per_decade_in_n,Log10n_min) &
+!$OMP FIRSTPRIVATE(T_ini,T_fin,steps_per_decade_in_T,Log10T_min) &
+!$OMP FIRSTPRIVATE(Log10nt_min,Log10nt_max,energy_shift) &
+!$OMP FIRSTPRIVATE(n_transition,n_delta) &
+!$OMP SHARED(nse_merge_ener,nse_merge_pres,nse_merge_entr) &
+!$OMP SHARED(nse_merge_mu_n,nse_merge_mu_p,nse_merge_mu_e) &
+!$OMP SHARED(nse_merge_xn,nse_merge_xp,nse_merge_xa) &
+!$OMP SHARED(nse_merge_xl,nse_merge_xh) &
+!$OMP SHARED(nse_merge_abar,nse_merge_zbar) &
+!$OMP SHARED(nse_merge_albar,nse_merge_zlbar) &
+!$OMP SHARED(nse_merge_r,nse_merge_u) &
+!$OMP SHARED(nse_merge_meffn,nse_merge_meffp) &
+!$OMP SHARED(nse_merge_dsdn,nse_merge_dsdt,nse_merge_dsdy) &
+!$OMP SHARED(nse_merge_dpdn,nse_merge_dpdt,nse_merge_dpdy) &
+!$OMP SHARED(sna_merge_ener,sna_merge_pres,sna_merge_entr) &
+!$OMP SHARED(sna_merge_mu_n,sna_merge_mu_p,sna_merge_mu_e) &
+!$OMP SHARED(sna_merge_xn,sna_merge_xp,sna_merge_xa) &
+!$OMP SHARED(sna_merge_xl,sna_merge_xh) &
+!$OMP SHARED(sna_merge_abar,sna_merge_zbar) &
+!$OMP SHARED(sna_merge_albar,sna_merge_zlbar) &
+!$OMP SHARED(sna_merge_r,sna_merge_u) &
+!$OMP SHARED(sna_merge_meffn,sna_merge_meffp) &
+!$OMP SHARED(sna_merge_dsdn,sna_merge_dsdt,sna_merge_dsdy) &
+!$OMP SHARED(sna_merge_dpdn,sna_merge_dpdt,sna_merge_dpdy) &
 !$OMP PRIVATE(xe,i_t,temp,temp_cgs,i_n,dens,dens_cgs) &
 !$OMP PRIVATE(nse_ener,nse_pres,nse_entr,nse_free) &
 !$OMP PRIVATE(nse_mu_hat,nse_mu_n,nse_mu_p,nse_mu_e) &
@@ -219,10 +244,19 @@ CONTAINS
           dsdy = a_n*sna_dentrdy + (one-a_n)*nse_dentrdy
           dsdt = a_n*sna_dentrdt + (one-a_n)*nse_dentrdt
           ! combined average nuclear mass number, etc...
-          abar = a_n*sna_abar + (one-a_n)*nse_abar
-          zbar = a_n*sna_zbar + (one-a_n)*nse_zbar
-          albar = a_n*sna_albar + (one-a_n)*nse_albar
-          zlbar = a_n*sna_zlbar + (one-a_n)*nse_zlbar
+          abar  = (a_n*sna_xh + (one-a_n)*nse_xh) &
+                / (a_n*sna_xh/sna_abar + (one-a_n)*nse_xh/nse_abar )
+          zbar  = (a_n*sna_xh + (one-a_n)*nse_xh) &
+                / (a_n*sna_xh/sna_zbar + (one-a_n)*nse_xh/nse_zbar )
+
+          IF (sna_xh == zero .AND. nse_xh == zero) THEN
+            abar = 1.d0
+            zbar = xe
+          ENDIF
+
+          albar = nse_albar 
+          zlbar = nse_zlbar
+
           xa   = a_n*sna_xa + (one-a_n)*nse_xa
           xn   = a_n*sna_xn + (one-a_n)*nse_xn
           xp   = a_n*sna_xp + (one-a_n)*nse_xp
@@ -237,8 +271,21 @@ CONTAINS
 
 !         get lepton+photon part of EoS
           IF (isnan(abar).OR.isnan(zbar).OR.isnan(albar).OR.isnan(zlbar)) THEN
-            WRITE (*,"(A25,15ES14.6)") 'MERGE error at (y,T,n):', xe, temp, dens
+            WRITE (*,"(A25,15ES14.6)") 'MERGE error at (y,T,n):', xe, temp, dens, &
+                    abar, sna_xh, sna_abar, nse_xh, nse_abar
             CYCLE
+          ENDIF
+
+          IF (abs(1.d0-xn-xp-xa-xl-xh)>1.d-6) THEN
+            WRITE (*,"(A25,15ES14.6)") 'Possible abundance error at (y,T,n):', xe, temp, dens
+          ENDIF
+
+          IF (xh>1.d-10 .AND. abar < 1.d0) THEN
+            WRITE (*,"(A25,15ES14.6)") 'Possible heavy nuclei error at (y,T,n):', xe, temp, dens
+          ENDIF
+
+          IF (xl>1.d-10 .AND. albar < 1.d0) THEN
+            WRITE (*,"(A25,15ES14.6)") 'Possible light nuclei error at (y,T,n):', xe, temp, dens
           ENDIF
 
           mu_nu = mu_e - mu_n + mu_p

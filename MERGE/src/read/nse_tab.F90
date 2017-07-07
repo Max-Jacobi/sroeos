@@ -137,7 +137,11 @@ CONTAINS
 
     keytemp = 1
 
-!$OMP PARALLEL DO SCHEDULE(dynamic,1) &
+!$OMP PARALLEL DO SCHEDULE(dynamic,1) DEFAULT(none) &
+!$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min) &
+!$OMP FIRSTPRIVATE(n_ini,n_fin,steps_per_decade_in_n,Log10n_min) &
+!$OMP FIRSTPRIVATE(T_ini,T_fin,steps_per_decade_in_T,Log10T_min) &
+!$OMP FIRSTPRIVATE(Log10nt_min,Log10nt_max,energy_shift) &
 !$OMP PRIVATE(xe,i_t,temp,temp_cgs,i_n,dens,dens_cgs) &
 !$OMP PRIVATE(nse_ener,nse_pres,nse_entr,nse_mu_hat,nse_mu_n,nse_mu_p) &
 !$OMP PRIVATE(nse_dpresdd,nse_dpresdt,nse_dpresdy) &
@@ -188,11 +192,11 @@ CONTAINS
             nse_r,nse_u,nse_meffn,nse_meffp,keytemp,keyerr,rfeps)
 
             abar = nse_xn+nse_xp+nse_xa/four
-            if (nse_abar  > 0.d0) &
+            if (nse_xh  > 0.d0) &
               abar = nse_xn+nse_xp+nse_xa/four+nse_xh/nse_abar
-            if (nse_albar > 0.d0) &
+            if (nse_xl > 0.d0) &
               abar = nse_xn+nse_xp+nse_xa/four+nse_xl/nse_albar
-            if (nse_abar > 0.d0 .and. nse_albar > 0.d0) &
+            if (nse_xh > 0.d0 .and. nse_xl > 0.d0) &
             abar = nse_xn+nse_xp+nse_xa/four+nse_xh/nse_abar+nse_xl/nse_albar
 
             abar = one/abar
@@ -201,9 +205,9 @@ CONTAINS
 !         get lepton+photon part of EoS
           IF (isnan(abar).OR.isnan(zbar).OR.abar<=1.d-10.OR.zbar<=1.d-10) THEN
             WRITE (*,"(A25,15ES14.6)") 'NSE error at (y,T,n):', xe, temp, dens
-!           WRITE (*,"(A26,15ES14.6)") '     A, Z, Abar, x_h',&
-!                   nse_xn, nse_xp, nse_xa, nse_xh, nse_xl, & 
-!                   nse_abar, nse_zbar, nse_albar, nse_zlbar
+            WRITE (*,"(A26,15ES14.6)") &
+                    nse_xn, nse_xp, nse_xa, nse_xh, nse_xl, & 
+                    nse_abar, nse_zbar, nse_albar, nse_zlbar
 !           write (*,"(10ES15.7)") '     E, P, S, mu_n, mu_p', & 
 !                                  nse_ener,nse_pres,nse_entr,nse_mu_n,nse_mu_p
             CYCLE
@@ -244,6 +248,11 @@ CONTAINS
           meffn = nse_meffn
           meffp = nse_meffp
 
+          IF (xh == ZERO) THEN
+            abar = 1.0d0
+            zbar = xe
+          ENDIF
+
 !         derivatives
 !         ds/dn, ds/dt, ds/dy
           dsdn = nse_dentrdd + ele_dentrdd*entropy_cgs_to_EOS/rho_cgs_to_EOS
@@ -272,11 +281,11 @@ CONTAINS
             nse_merge_xp(i_n,i_t,i_yp)    = xp
             nse_merge_xn(i_n,i_t,i_yp)    = xn
             nse_merge_xh(i_n,i_t,i_yp)    = xh
-            nse_merge_abar(i_n,i_t,i_yp)  = abar
-            nse_merge_zbar(i_n,i_t,i_yp)  = zbar
+            nse_merge_abar(i_n,i_t,i_yp)  = max(abar,1.d-10)
+            nse_merge_zbar(i_n,i_t,i_yp)  = max(zbar,1.d-10)
             nse_merge_xl(i_n,i_t,i_yp)    = xl
-            nse_merge_albar(i_n,i_t,i_yp)  = albar
-            nse_merge_zlbar(i_n,i_t,i_yp)  = zlbar
+            nse_merge_albar(i_n,i_t,i_yp) = max(albar,1.d-10)
+            nse_merge_zlbar(i_n,i_t,i_yp) = max(zlbar,1.d-10)
 
             nse_merge_r(i_n,i_t,i_yp)    = rad
             nse_merge_u(i_n,i_t,i_yp)    = u
