@@ -514,9 +514,9 @@ CONTAINS
         WRITE (*,*)  sna_eos_tempmin, sna_eos_tempmax
     END SELECT
 
-    WRITE (6,*) "Done reading eos tables", (size(alltables,i), i=1,4)
-    WRITE (6,*) "Done reading eos tables", (size(sna_table,i), i=1,4)
-    WRITE (6,*) "Done reading eos tables", (size(nse_table,i), i=1,4)
+!    WRITE (6,*) "Done reading eos tables", (size(alltables,i), i=1,4)
+!    WRITE (6,*) "Done reading eos tables", (size(sna_table,i), i=1,4)
+!    WRITE (6,*) "Done reading eos tables", (size(nse_table,i), i=1,4)
 
     DEALLOCATE(alltables)
 
