@@ -85,7 +85,7 @@ CONTAINS
 
     IF (m < 1000.0) THEN
       delta = SQRT(PI)*n/(2.d0*g*(m*T/sac_const)**1.5d0)
-      mu = inverse_fermi_one_half(delta) * T  + m + Ec
+      mu = inverse_fermi_one_half(delta) * T  + m + Ec 
     ENDIF
 
   END FUNCTION calc_mu
@@ -107,7 +107,7 @@ CONTAINS
 
     expt = (mu-m-Ec)/T
 
-    IF (expt<-2.0D2) THEN
+    IF (expt<-3.0D2) THEN
       n = 0.D0
     ELSEIF (expt>3.0D2) THEN
       n = g*(m*T/sac_const)**1.5D0*exp(3.0D2)

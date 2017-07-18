@@ -49,6 +49,7 @@ CONTAINS
 
     WRITE (*,*) 'Compute contribution of NSE EOS to final EOS.'
 
+    rfeps = 1.d-10
 ! check if arrays have been ALLOCATEd
     IF (ALLOCATED(yp))        DEALLOCATE(yp)
     IF (ALLOCATED(logtemp))   DEALLOCATE(logtemp)
@@ -143,7 +144,8 @@ CONTAINS
 !$OMP FIRSTPRIVATE(T_ini,T_fin,steps_per_decade_in_T,Log10T_min) &
 !$OMP FIRSTPRIVATE(Log10nt_min,Log10nt_max,energy_shift) &
 !$OMP PRIVATE(xe,i_t,temp,temp_cgs,i_n,dens,dens_cgs) &
-!$OMP PRIVATE(nse_ener,nse_pres,nse_entr,nse_mu_hat,nse_mu_n,nse_mu_p) &
+!$OMP PRIVATE(nse_ener,nse_pres,nse_entr,nse_free) &
+!$OMP PRIVATE(nse_mu_hat,nse_mu_n,nse_mu_p) &
 !$OMP PRIVATE(nse_dpresdd,nse_dpresdt,nse_dpresdy) &
 !$OMP PRIVATE(nse_dentrdd,nse_dentrdt,nse_dentrdy) &
 !$OMP PRIVATE(nse_dmuhdd,nse_dmuhdt,nse_dmuhdy) &
@@ -225,6 +227,8 @@ CONTAINS
           pres  = nse_pres  + ele_pres*press_cgs_to_EOS
           entr  = nse_entr  + ele_entr*entropy_cgs_to_EOS
           ener  = nse_ener  + ele_ener*energy_cgs_to_EOS
+
+          nse_free = dens*(nse_ener + temp*nse_entr)
 
 !         mu_p,mu_n,mu_hat,mu_e,mu_nu
           mu_p  = nse_mu_p

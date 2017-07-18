@@ -189,10 +189,10 @@ program nse_test
   WRITE(*,*) 'Computing temperature derivatives'
   WRITE(*,*)
 
-  xtplus = 1.01d0*xt
+  xtplus = 1.001d0*xt
   call calc_ioneos(xn,xtplus,xye,xmass,pplus,eplus,splus,mu_n0,mu_p0,muhplus)
 
-  xtminus = 0.99d0*xt
+  xtminus = 0.999d0*xt
   call calc_ioneos(xn,xtminus,xye,xmass,pminus,eminus,sminus,mu_n0,mu_p0,muhminus)
 
   dpdt = (pplus-pminus)/(xtplus-xtminus)
@@ -204,10 +204,10 @@ program nse_test
   WRITE(*,*) 'Computing density derivatives'
   WRITE(*,*)
 
-  xnplus = 1.01d0*xn
+  xnplus = 1.001d0*xn
   call calc_ioneos(xnplus,xt,xye,xmass,pplus,eplus,splus,mu_n0,mu_p0,muhplus)
 
-  xnminus = 0.99d0*xn
+  xnminus = 0.999d0*xn
   call calc_ioneos(xnminus,xt,xye,xmass,pminus,eminus,sminus,mu_n0,mu_p0,muhminus)
 
   dpdn = (pplus-pminus)/(xnplus-xnminus)
@@ -219,10 +219,10 @@ program nse_test
   WRITE(*,*) 'Computing proton fraction derivatives'
   WRITE(*,*)
 
-  xyeplus = 1.01d0*xye
+  xyeplus = 1.001d0*xye
   call calc_ioneos(xn,xt,xyeplus,xmass,pplus,eplus,splus,mu_n0,mu_p0,muhplus)
 
-  xyeminus = 0.99d0*xye
+  xyeminus = 0.999d0*xye
   call calc_ioneos(xn,xt,xyeminus,xmass,pminus,eminus,sminus,mu_n0,mu_p0,muhminus)
 
   dpdy = (pplus-pminus)/(xyeplus-xyeminus)

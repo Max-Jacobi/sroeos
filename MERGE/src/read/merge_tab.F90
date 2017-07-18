@@ -106,7 +106,7 @@ CONTAINS
 !$OMP PRIVATE(pres,entr,ener,mu_p,mu_n,mu_hat,mu_e,mu_nu) &
 !$OMP PRIVATE(rad,u,meffn,meffp,xa,xp,xn,xh,xl) &
 !$OMP PRIVATE(dsdn,dsdt,dsdy,dpdn,dpdt,dpdy,dedn,dedt,dedy) &
-!$OMP PRIVATE(gam,fac,cs2,dpdrhoe,dpderho) &
+!$OMP PRIVATE(free,gam,fac,cs2,dpdrhoe,dpderho) &
 !$OMP SHARED(final_tab)
     DO i_yp = yp_ini, yp_fin
       xe = Yp_min + dble(i_Yp-1)*Yp_step
@@ -202,20 +202,23 @@ CONTAINS
           ener = a_n*sna_ener + (one-a_n)*nse_ener
           ! combine entropy
           entr = a_n*sna_entr + (one-a_n)*nse_entr
-          ! combine neutron chemical potential
-          mu_n = a_n*sna_mu_n + (one-a_n)*nse_mu_n
-          ! combine proton chemical potential
-          mu_p = a_n*sna_mu_p + (one-a_n)*nse_mu_p
           ! combine electron chemical potential
           mu_e = a_n*sna_mu_e + (one-a_n)*nse_mu_e
-          ! combine (neutron - proton) chemical potential
-          mu_hat = mu_n - mu_p
           ! combine free energy f_T = a(n)*f_LS + (1-a(n))*f_NSE
           sna_free = sna_ener - temp*sna_entr
           nse_free = nse_ener - temp*nse_entr
-          ! free = ener - temp*entr
+          ! combine neutron chemical potential
+          mu_n = a_n*sna_mu_n + (one-a_n)*nse_mu_n &
+                 + dens*dadn*(sna_free-nse_free)
+          ! combine proton chemical potential
+          mu_p = a_n*sna_mu_p + (one-a_n)*nse_mu_p &
+                 + dens*dadn*(sna_free-nse_free)
+          ! combine (neutron - proton) chemical potential
+          mu_hat = mu_n - mu_p
+          free = dens*(a_n*sna_free + (one-a_n)*nse_free)
           ! combine pressure
-          pres = a_n*sna_pres+(one-a_n)*nse_pres + dens*dens*dadn*(sna_free-nse_free)
+          pres = a_n*sna_pres+(one-a_n)*nse_pres &
+                + dens*dens*dadn*(sna_free-nse_free)
           ! combine pressure derivatives
           dpdn = a_n*sna_dpresdd + (one-a_n)*nse_dpresdd&
                     + (sna_pres-nse_pres)*dadn &
@@ -226,7 +229,7 @@ CONTAINS
           dpdt = a_n*sna_dpresdt + (one-a_n)*nse_dpresdt &
                 - dens*dens*(sna_entr-nse_entr)*dadn
           ! combine internal energy derivatives
-          sna_denerdd = sna_pres /dens/dens + temp*sna_dentrdd
+          sna_denerdd = sna_pres/dens/dens + temp*sna_dentrdd
           nse_denerdd = nse_pres/dens/dens + temp*nse_dentrdd
           dedn = a_n*sna_denerdd + (one-a_n)*nse_denerdd &
                 + (sna_ener-nse_ener)*dadn

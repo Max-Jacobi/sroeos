@@ -19,7 +19,7 @@ MODULE NSE_MOD
 
   IMPLICIT NONE
 
-  REAL(DP) :: nse_ener, nse_pres, nse_entr
+  REAL(DP) :: nse_ener, nse_pres, nse_entr, nse_free
   REAL(DP) :: nse_mu_hat, nse_mu_n, nse_mu_p, nse_mu_e
   REAL(DP) :: nse_dpresdd, nse_dpresdt, nse_dpresdy
   REAL(DP) :: nse_dentrdd, nse_dentrdt, nse_dentrdy

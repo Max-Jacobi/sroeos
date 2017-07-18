@@ -465,10 +465,10 @@ CONTAINS
 
       Ec = calc_Ec(xn, xtemp, xye, aion_nse(iiso), zion_nse(iiso), 0.16d0)
       dEcdln = calc_dEcdln(xn, xtemp, xye, aion_nse(iiso), zion_nse(iiso), 0.16d0, d2Ecdln2)
-      ! partial pressure : P_i = n_i * T
-      xpressi   = xni * xtemp
 
-      if (xmass(iiso)/aion_nse(iiso) > 1.d-20) then
+      ! partial pressure : P_i = n_i * T
+
+      if (xmass(iiso)/aion_nse(iiso) > 1.d-40) then
       ! internal energy in MeV / fm^3 with neutron-proton correction
       ! and binding energy
         xepsi     = 1.5d0 * xtemp  + Ec &
@@ -478,9 +478,11 @@ CONTAINS
         xentropyi = 2.5d0 + log(wion_nse(iiso)/xni * &
             (mion_nse(iiso) * xtemp / sac_const)**(3.0/2.0)) &
             + DwionDT_nse(iiso)/wion_nse(iiso)*xtemp
+        xpressi   = xni * xtemp
       else ! If the abundance is very small, the species won't matter and we want to avoid NaNs
         xepsi     = 0.d0
         xentropyi = 0.d0
+        xpressi   = 0.d0
       endif
 
       ! Use RESULTs for arbitrarily degenerate nucleons

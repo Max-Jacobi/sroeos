@@ -21,7 +21,7 @@ MODULE SNA_MOD
 
   SAVE
 
-  REAL(DP) :: sna_ener, sna_pres, sna_entr
+  REAL(DP) :: sna_ener, sna_pres, sna_entr, sna_free
   REAL(DP) :: sna_mu_hat, sna_mu_n, sna_mu_p, sna_mu_e
   REAL(DP) :: sna_dpresdd, sna_dpresdt, sna_dpresdy
   REAL(DP) :: sna_dentrdd, sna_dentrdt, sna_dentrdy

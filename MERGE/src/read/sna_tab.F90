@@ -49,6 +49,7 @@ CONTAINS
 
     WRITE (*,*) 'Compute contribution of SNA EOS to final EOS.'
 
+    rfeps = 1.d-10
 ! check if arrays have been ALLOCATEd
     IF (ALLOCATED(yp))        DEALLOCATE(yp)
     IF (ALLOCATED(logtemp))   DEALLOCATE(logtemp)
@@ -142,7 +143,8 @@ CONTAINS
 !$OMP FIRSTPRIVATE(T_ini,T_fin,steps_per_decade_in_T,Log10T_min) &
 !$OMP FIRSTPRIVATE(Log10nt_min,Log10nt_max,energy_shift) &
 !$OMP PRIVATE(xe,i_t,temp,temp_cgs,i_n,dens,dens_cgs) &
-!$OMP PRIVATE(sna_ener,sna_pres,sna_entr,sna_mu_hat,sna_mu_n,sna_mu_p) &
+!$OMP PRIVATE(sna_ener,sna_pres,sna_entr,sna_free) &
+!$OMP PRIVATE(sna_mu_hat,sna_mu_n,sna_mu_p) &
 !$OMP PRIVATE(sna_dpresdd,sna_dpresdt,sna_dpresdy) &
 !$OMP PRIVATE(sna_dentrdd,sna_dentrdt,sna_dentrdy) &
 !$OMP PRIVATE(sna_dmuhdd,sna_dmuhdt,sna_dmuhdy) &
@@ -204,9 +206,6 @@ CONTAINS
 !         get lepton+photon part of EoS
           IF (isnan(abar).OR.isnan(zbar).OR.abar<=1.d-10.OR.zbar<=1.d-10) THEN
             WRITE (*,"(A26,15ES14.6)") 'Error at (y,T,n) : ', xe, temp, dens
-!          WRITE (*,"(A26,15ES14.6)") '     A, Z, Abar, x_h',&
-!                                     abar, zbar, sna_abar, sna_xh
-!          write (*,"(10ES15.7)") '     E, P, S, mu_n, mu_p', & !                                  sna_ener,sna_pres,sna_entr,sna_mu_n,sna_mu_p
             CYCLE
           ENDIF
 
@@ -222,6 +221,8 @@ CONTAINS
           pres  = sna_pres  + ele_pres*press_cgs_to_EOS
           entr  = sna_entr  + ele_entr*entropy_cgs_to_EOS
           ener  = sna_ener  + ele_ener*energy_cgs_to_EOS
+
+          sna_free = dens*(sna_ener - temp*sna_entr)
 
 !         mu_p,mu_n,mu_hat,mu_e,mu_nu
           mu_p  = sna_mu_p
