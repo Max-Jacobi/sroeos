@@ -50,11 +50,11 @@ CONTAINS
     integer_work_array  = 0
     info = 0
 
-    write (*,*) data_points
+    !write (*,*) data_points
 
     Surface_sigma = SURFACE_TENSION_ARRAY(1)
 
-    write (*,*) surface_sigma
+    !write (*,*) surface_sigma
 
 !   initial guess for lambda, p, q
     dimensions = 3
@@ -76,8 +76,8 @@ CONTAINS
 !    T_crit_coeffs(3) = fitting_values(6)
 !    T_crit_coeffs(4) = fitting_values(7)
 
-    write (*,*) info
-    write (*,*) fitting_values
+    !write (*,*) info
+    !write (*,*) fitting_values
 
 CONTAINS
 
@@ -115,9 +115,11 @@ CONTAINS
     //"/surface_tension_vs_sigma.dat")
 
     DO k = 1, data_points
+      IF (TAB_SURF_TENS_VAL(k,1) < prot_frac) WRITE (23,*)
       prot_frac   = TAB_SURF_TENS_VAL(k,1)
       Temperature = TAB_SURF_TENS_VAL(k,2)
       Surface_tension = TAB_SURF_TENS_VAL(k,3)/Surface_sigma
+
 
       neutron_excess = (ONE-TWO*prot_frac)
 
@@ -153,8 +155,8 @@ CONTAINS
 
     CLOSE(23)
 
-    write (*,*) ' x   = ', x
-    write (*,*) ' f.f = ', dot_product(fvec,fvec)
+    !write (*,*) ' x   = ', x
+    !write (*,*) ' f.f = ', dot_product(fvec,fvec)
 
     RETURN
 

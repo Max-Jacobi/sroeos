@@ -327,7 +327,6 @@ CONTAINS
     exc_v_alpha = one - n_alpha*v_alpha
 
     S(1) = ONE - (n_o*exc_v_alpha + FOUR*n_alpha)/n
-    ! IF (IS_TEST) WRITE (*,*) log10_n_no,log10_n_po,log10_u,un_F,S,error
 
   END SUBROUTINE SOLVE_UNIFORM_NEUTRON_RICH
 
