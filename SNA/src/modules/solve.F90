@@ -186,7 +186,7 @@ CONTAINS
           ! set debug counters to zero
           count_nu = 0 ; count_u = 0
           ! TODO: make this a function
-          n = TEN**(Log10n_min+dble(i_n-1)/dble(steps_per_decade_in_T))
+          n = TEN**(Log10n_min+dble(i_n-1)/dble(steps_per_decade_in_n))
           Delta_n = n*(ONE-TEN**(ONE/dble(steps_per_decade_in_n)))
 !------------------------------------------------------------------------------!
 !         look for uniform matter solution
