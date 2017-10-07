@@ -56,6 +56,7 @@ CONTAINS
 
 !   spacing used to compute numerical derivatives in log10n, log10T, Yp
     REAL(DP), PARAMETER   :: dlnn = 1.0D-3, dlnt = 1.0D-3, dy = 1.0D-3
+    REAL(DP), PARAMETER   :: ln10 = log(10.)
 
     REAL(DP)   :: xy3, xn3, xt3
     REAL(DP)   :: xn, xt, xy
@@ -159,10 +160,6 @@ CONTAINS
     call cpu_time ( xtime )
 #endif
 
-    ! ALLOCATE auxiliary arrays and set them to zero
-    ALLOCATE(  p3(0:nn3+1,0:nt3+1,0:2),   s3(0:nn3+1,0:nt3+1,0:2),   e3(0:nn3+1,0:nt3+1,0:2))
-    ALLOCATE(muh3(0:nn3+1,0:nt3+1,0:2), mun3(0:nn3+1,0:nt3+1,0:2), mup3(0:nn3+1,0:nt3+1,0:2))
-     p3 = zero ; s3 = zero ; e3 = zero ; muh3 = zero ; mun3 = zero ; mup3 = zero
     ! get thread number (one for each proton fraction)
 #ifdef _OPENMP
      thread = omp_get_thread_num()
@@ -174,6 +171,13 @@ CONTAINS
     IF (modk==0) xy = Yp_min + (Yp_max-Yp_min)*REAL(k-0)/REAL(ny3-1) - dy/2.d0
     IF (modk==1) xy = Yp_min + (Yp_max-Yp_min)*REAL(k-1)/REAL(ny3-1)
     IF (modk==2) xy = Yp_min + (Yp_max-Yp_min)*REAL(k-2)/REAL(ny3-1) + dy/2.d0
+
+    IF (modk==2) THEN
+      ! ALLOCATE auxiliary arrays and set them to zero
+      ALLOCATE(  p3(0:nn3+1,0:nt3+1,0:2),   s3(0:nn3+1,0:nt3+1,0:2),   e3(0:nn3+1,0:nt3+1,0:2))
+      ALLOCATE(muh3(0:nn3+1,0:nt3+1,0:2), mun3(0:nn3+1,0:nt3+1,0:2), mup3(0:nn3+1,0:nt3+1,0:2))
+      p3 = zero ; s3 = zero ; e3 = zero ; muh3 = zero ; mun3 = zero ; mup3 = zero
+    ENDIF
 
 !   get filenames for solution and error outputs
     IF (write_solutions_to_file) THEN
@@ -334,14 +338,16 @@ CONTAINS
           al_tab(i3,j3,k3) = xalbar
         ENDIF
 
-        IF (modk==2) THEN
-          dpdn_tab (i3,j3,k3) = (p3(i+1,j,1)-p3(i-1,j,1))/dlnn/xn3
-          dsdn_tab (i3,j3,k3) = (s3(i+1,j,1)-s3(i-1,j,1))/dlnn/xn3
-          dmudn_tab(i3,j3,k3) = (muh3(i+1,j,1)-muh3(i-1,j,1))/dlnn/xn3
+        IF (modk==0) THEN
+          !write (*,"(3I5,9ES15.6)") i, j, 1, p3(i+1,j,1), p3(i-1,j,1)
+          !pause
+          dpdn_tab (i3,j3,k3) = (p3(i+1,j,1)-p3(i-1,j,1))/dlnn/xn3/ln10
+          dsdn_tab (i3,j3,k3) = (s3(i+1,j,1)-s3(i-1,j,1))/dlnn/xn3/ln10
+          dmudn_tab(i3,j3,k3) = (muh3(i+1,j,1)-muh3(i-1,j,1))/dlnn/xn3/ln10
 
-          dpdt_tab (i3,j3,k3) = (p3(i,j+1,1)-p3(i,j-1,1))/dlnt/xt3
-          dsdt_tab (i3,j3,k3) = (s3(i,j+1,1)-s3(i,j-1,1))/dlnt/xt3
-          dmudt_tab(i3,j3,k3) = (muh3(i,j+1,1)-muh3(i,j-1,1))/dlnt/xt3
+          dpdt_tab (i3,j3,k3) = (p3(i,j+1,1)-p3(i,j-1,1))/dlnt/xt3/ln10
+          dsdt_tab (i3,j3,k3) = (s3(i,j+1,1)-s3(i,j-1,1))/dlnt/xt3/ln10
+          dmudt_tab(i3,j3,k3) = (muh3(i,j+1,1)-muh3(i,j-1,1))/dlnt/xt3/ln10
 
           dpdy_tab (i3,j3,k3) = (p3(i,j,2)-p3(i,j,0))/dy
           dsdy_tab (i3,j3,k3) = (s3(i,j,2)-s3(i,j,0))/dy
@@ -374,7 +380,7 @@ CONTAINS
         FLUSH(1000*thread+10) ; FLUSH(1000*thread+11) ; FLUSH(1000*thread+12)
       ENDIF
     ENDDO
-    DEALLOCATE(p3,s3,e3,muh3,mun3,mup3)
+    IF (modk==0) DEALLOCATE(p3,s3,e3,muh3,mun3,mup3)
     IF (write_solutions_to_file) THEN
       CLOSE(1000*thread+10) ; CLOSE(1000*thread+11) ; CLOSE(1000*thread+12)
     ENDIF
