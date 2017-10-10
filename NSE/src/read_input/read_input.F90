@@ -136,7 +136,7 @@ CONTAINS
 
     Yp_ini = 1
     Yp_chk = (Yp_max - Yp_min)/Yp_step
-    Yp_fin = INT(Yp_chk) + 1
+    Yp_fin = IDNINT(Yp_chk) + 1
 
   !   check for Yp = 1/2.
     DO i_Yp = Yp_ini, Yp_fin

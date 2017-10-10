@@ -49,7 +49,7 @@ CONTAINS
     CHARACTER(LEN=64) :: command, string_ye
 
 !   loop variables and auxiliary integers
-    INTEGER(I4B)  :: i,j,k,i0,j0,k0,i1,j1,k1,i3,j3,k3,l,thread
+    INTEGER(I4B)  :: i,j,k,i0,j0,k0,i1,j1,k1,i3,j3,k3,ip,jp,kp,l,thread
 
 !
     REAL(DP), ALLOCATABLE :: xmass(:)
@@ -135,7 +135,7 @@ CONTAINS
 !   Iterate over (Yp,T,n) grid and save output arrays
 !$OMP PARALLEL DO SCHEDULE(DYNAMIC,3) DEFAULT(SHARED)&
 !$OMP PRIVATE(xy,xn,xt,loop,xmass,press,eps,entropy,mu_n,mu_p,mu_hat) &
-!$OMP PRIVATE(i,j,i0,j0,k0,i1,j1,k1,i3,j3,k3,l,thread) &
+!$OMP PRIVATE(i,j,i0,j0,k0,i1,j1,k1,i3,j3,k3,ip,jp,kp,l,thread) &
 !$OMP PRIVATE(modi,modj,modk,modi0,modj0,modk0) &
 !$OMP PRIVATE(xxn,xxp,xxa,xxl,xxh,xahbar,xzhbar,xalbar,xzlbar) &
 !$OMP PRIVATE(filename0,filename1,filename2,string_ye) &
@@ -183,7 +183,7 @@ CONTAINS
     IF (write_solutions_to_file) THEN
       WRITE (string_ye,"(1F8.6)") xy
 
-      filename0 =  TRIM(ADJUSTL(output_directory))//"/NO_SOL/"//TRIM(ADJUSTL(string_ye))
+      filename0 = TRIM(ADJUSTL(output_directory))//"/NO_SOL/"//TRIM(ADJUSTL(string_ye))
       filename1 = TRIM(ADJUSTL(output_directory))//"/ERROR/"//TRIM(ADJUSTL(string_ye))
       filename2 = TRIM(ADJUSTL(output_directory))//"/SOL/"//TRIM(ADJUSTL(string_ye))
 
@@ -341,17 +341,18 @@ CONTAINS
         IF (modk==0) THEN
           !write (*,"(3I5,9ES15.6)") i, j, 1, p3(i+1,j,1), p3(i-1,j,1)
           !pause
-          dpdn_tab (i3,j3,k3) = (p3(i+1,j,1)-p3(i-1,j,1))/dlnn/xn3/ln10
-          dsdn_tab (i3,j3,k3) = (s3(i+1,j,1)-s3(i-1,j,1))/dlnn/xn3/ln10
-          dmudn_tab(i3,j3,k3) = (muh3(i+1,j,1)-muh3(i-1,j,1))/dlnn/xn3/ln10
+          ip = i3 + 1; jp = j3 + 1; kp = k3 + 1
+          dpdn_tab (i3,j3,kp) = (p3(i+1,j,1)-p3(i-1,j,1))/dlnn/xn3/ln10
+          dsdn_tab (i3,j3,kp) = (s3(i+1,j,1)-s3(i-1,j,1))/dlnn/xn3/ln10
+          dmudn_tab(i3,j3,kp) = (muh3(i+1,j,1)-muh3(i-1,j,1))/dlnn/xn3/ln10
 
-          dpdt_tab (i3,j3,k3) = (p3(i,j+1,1)-p3(i,j-1,1))/dlnt/xt3/ln10
-          dsdt_tab (i3,j3,k3) = (s3(i,j+1,1)-s3(i,j-1,1))/dlnt/xt3/ln10
-          dmudt_tab(i3,j3,k3) = (muh3(i,j+1,1)-muh3(i,j-1,1))/dlnt/xt3/ln10
+          dpdt_tab (i3,j3,kp) = (p3(i,j+1,1)-p3(i,j-1,1))/dlnt/xt3/ln10
+          dsdt_tab (i3,j3,kp) = (s3(i,j+1,1)-s3(i,j-1,1))/dlnt/xt3/ln10
+          dmudt_tab(i3,j3,kp) = (muh3(i,j+1,1)-muh3(i,j-1,1))/dlnt/xt3/ln10
 
-          dpdy_tab (i3,j3,k3) = (p3(i,j,2)-p3(i,j,0))/dy
-          dsdy_tab (i3,j3,k3) = (s3(i,j,2)-s3(i,j,0))/dy
-          dmudy_tab(i3,j3,k3) = (muh3(i,j,2)-muh3(i,j,0))/dy
+          dpdy_tab (i3,j3,kp) = (p3(i,j,2)-p3(i,j,0))/dy
+          dsdy_tab (i3,j3,kp) = (s3(i,j,2)-s3(i,j,0))/dy
+          dmudy_tab(i3,j3,kp) = (muh3(i,j,2)-muh3(i,j,0))/dy
         ENDIF
 
         IF (write_solutions_to_file) &

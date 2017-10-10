@@ -55,7 +55,7 @@ PROGRAM Main
   write(6,"(A19,I3,A10)") " Using OpenMP with ",nthreads," thread(s)"
   write(6,*)
   write(6,*) "******************************************************************************"
-  call sleep(5)
+  call sleep(0)
 
   WRITE (*,*)
   WRITE (*,*) 'Step 1: Reading input.'
