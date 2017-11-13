@@ -67,6 +67,7 @@ CONTAINS
       surface_p      = zero
       surface_lambda = zero
       CALL NUCLEAR_SURFACE_TENSION(data_points,TAB_SURF_TENS_VAL)
+      WRITE (*,*) '        Fitted Surface tension based on Skyrme parametrization.'
       CALL NUCLEAR_SURFACE_FIT(data_points,TAB_SURF_TENS_VAL)
     ELSE
       WRITE (*,*) '        Used user input for Surface fitting.'

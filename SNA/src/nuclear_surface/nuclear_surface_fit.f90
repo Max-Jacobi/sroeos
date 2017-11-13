@@ -145,10 +145,14 @@ CONTAINS
 
       IF ( Surface_tension == ZERO.or.ieee_is_nan(Surface_tension) ) THEN
         !WRITE (*,*) I, J, H, NUM, DEN
-        IF (Surface_tension == ZERO) STOP &
-                    'ERROR EVALUATING FVEC(K) AND/OR Surface_tension'
-        IF (ieee_is_nan(Surface_tension))  STOP &
-                    'ERROR: Surface_tension IS NOT A NUMBER'
+        IF (Surface_tension == ZERO) THEN
+          WRITE (*,*) prot_frac, Temperature, SURFACE_TENSION
+          WRITE (*,*) 'ERROR EVALUATING FVEC(K) AND/OR Surface_tension'
+        ENDIF
+        IF (ieee_is_nan(Surface_tension)) THEN
+          WRITE (*,*) k, 'ERROR: Surface_tension IS NOT A NUMBER'
+        ENDIF
+        STOP
       ENDIF
 
     ENDDO

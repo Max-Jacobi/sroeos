@@ -85,7 +85,7 @@ CONTAINS
     N = N_DIM
     MAXIT = 250 ; JACFLG(1:4) = (/0,-1,-1, 1/) ; OUTOPT(1:2) = (/0,1/)
     METHOD = 0; GLOBAL = 4; XSCALM = 1; LDR = N; LRWORK = 9*N
-    XTOL = 1.D-16; FTOL = 1.D-8; BTOL = 1.D-5; CNDTOL = 1.D-7
+    XTOL = 1.D-12; FTOL = 1.D-8; BTOL = 1.D-5; CNDTOL = 1.D-7
     STEPMX = -1.D0; DELTA = -1.D0; SIGMA = 0.5D0; TRACE = 1.D0; DSUB = 0.D0
     SIZE = (METHOD+1)*N*N
 
@@ -101,17 +101,17 @@ CONTAINS
 !   Set initial guesses for
 !    symmetric nuclear matter
     IF (N_DIM == 1) THEN
-      IF (x2(1)==ZERO) X2(1) = 0.3D0
+      IF (x2(1)==ZERO) X2(1) = 0.2D0
 !       if (xsol(1)/=zero) x2 = xsol
     ENDIF
 !    asymmetric nuclear matter
     IF (N_DIM == 3) THEN
 !   Assuming a Woods-Saxon density profile
 !   Set initial guess for neutron radius thickness
-      x2(1) = 2.d0*(HALF-prot_frac)
+      x2(1) = (HALF-PROT_FRAC)*4.D0 + 1.d-3
 !   Set initial guess for neutron and proton diffuseness parameters
-      x2(2) = MAX(HALF,Temperature/20.D0)*(half/prot_frac)
-      x2(3) = MAX(HALF,Temperature/20.D0)
+      x2(2) = (ONE-PROT_FRAC)
+      x2(3) = x2(2) - (HALF-PROT_FRAC)/TWO
 !     if some initial guess already given, use it
       IF (sum(x_sol(1:3))/=zero) x2 = x_sol
     ENDIF

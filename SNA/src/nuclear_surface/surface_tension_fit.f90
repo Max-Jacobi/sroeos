@@ -57,10 +57,14 @@ CONTAINS
           k = k + 1
           IF (FTABLE(I,J) == ZERO.or.ieee_is_nan(FTABLE(I,J))) THEN
             ! WRITE (*,*) I, J, H, NUM, DEN
-            IF (FTABLE(I,J) == ZERO) &
-                          STOP 'ERROR EVALUATING FVEC(K) AND/OR FTABLE(I,J)'
-            IF (ieee_is_nan(FTABLE(I,J)))  &
-                          STOP 'ERROR: FTABLE(I,J) IS NOT A NUMBER'
+            IF (FTABLE(I,J) == ZERO) THEN
+              WRITE (*,*) I, J, ftable(i,j)
+              WRITE (*,*) 'ERROR EVALUATING FVEC(K) AND/OR FTABLE(I,J)'
+            ENDIF
+            IF (ieee_is_nan(FTABLE(I,J)))  THEN
+              WRITE (*,*)  'ERROR: FTABLE(I,J) IS NOT A NUMBER'
+            ENDIF
+            STOP
           ELSE
             fvec(k) = (FUNC-FTABLE(I,J))/FUNC
           ENDIF

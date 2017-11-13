@@ -16,15 +16,16 @@
 MODULE Surface_Equilibrium_Mod
 
   USE Kind_Types_Mod, ONLY : I4B, DP
-  USE Physical_Constants_Mod, ONLY : ZERO, ONE, TWO, TEN
+  USE Physical_Constants_Mod, ONLY : ZERO, HALF, ONE, TWO, TEN
   USE Skyrme_Bulk_Mod, ONLY : SKYRME_BULK_PROPERTIES
   USE nwnleq_mod
   USE lautil_mod
+  USE OMP_LIB
 
   IMPLICIT NONE
 
   REAL(DP) :: prot_frac_inside, temp
-
+!$omp threadprivate(prot_frac_inside,temp)
 CONTAINS
 
   SUBROUTINE FIND_SURFACE_EQUILIBRIUM ( x_sol, prot_frac,  &
@@ -40,7 +41,7 @@ CONTAINS
     REAL(DP), INTENT(IN) :: prot_frac, temperature
     REAL(DP), DIMENSION(4) :: x1, x2, r
     REAL(DP), DIMENSION(4,4) :: g
-    LOGICAL, INTENT(OUT) :: lgt
+    LOGICAL, INTENT(INOUT) :: lgt
     INTEGER(I4B) :: FLAG, retry
     REAL(DP) :: RES1, RES2
 
@@ -76,19 +77,21 @@ CONTAINS
     SCALEX = ONE
 
 !   Set initial guesses for
-!    inside neutron fraction
-    x2(1) = - 1.1d0
 !   inside proton fraction
-    x2(2) = x2(1) + log10(prot_frac)
+    x2(1) = - 1.1d0 !- 3.d0*(prot_frac-half)/5.d0
+!   inside neutron fraction
+    x2(2) = x2(1) + (prot_frac-half)
 !   outside neutron fraction
-    x2(3) = -10.d0
+    x2(3) = -11.4d0 - 20.d0*(prot_frac-half) + dble(retry)
 !   outside proton fraction
-    x2(4) = x2(3)*(two*prot_frac)
+    x2(4) = x2(3) - 2.d0*dble(retry)
+!    x2(4) = min(x2(4),50.d0)
 
 !   if initial value not zero
 !    then use them as initial guesses
     if (sum(x_sol(1:2))/=zero) x2(1:2) = x_sol(1:2)
     if (sum(x_sol(3:4))/=zero) x2(3:4) = x_sol(3:4)
+    x2(4) = x2(4) - dble(retry)
 
     x1 = ZERO
 
@@ -98,6 +101,7 @@ CONTAINS
                 rcdwrk,icdwrk,qrwork,qrwsiz,&
                 jacob_surface_equilibrium,surface_equilibrium,outopt,x1, &
                 r,g,njcnt,nfcnt,iter,termcd)
+    IF (TERMCD.NE.1) write (*,"(10es15.6,i4)") PROT_FRAC, TEMP, X1, R, termcd
     deallocate(RJAC, RWORK, RCDWRK, ICDWRK, QRWORK, SCALEX)
 !   chech whether solution x1 found is actually a solution to eq being solved.
 !   sotemimes output for x1 is not a solution, but a point where nlwleq stalled.
@@ -107,13 +111,14 @@ CONTAINS
 
     lgt = .FALSE.
 !   IF x1 is a solution THEN set as so
-    IF (DOT_PRODUCT(r,r)<1.d-12) THEN
+    IF (DOT_PRODUCT(r,r)<1.d-16) THEN
       x_sol = x1
       ! only set as true solution with inside/outside matter
       ! if inside/outside densities are different
       RES1 = ABS((x_sol(1)-x_sol(3))/x_sol(1))
       RES2 = ABS((x_sol(2)-x_sol(4))/x_sol(2))
-      if (res1>1.d-6 .and. res2>1.d-6) lgt = .true.
+      if (res1>1.d-3 .and. res2>1.d-3) lgt = .true.
+      !if (x_sol(4)>x_sol(3)) lgt = .false.
       if (lgt) return
     ENDIF
 
