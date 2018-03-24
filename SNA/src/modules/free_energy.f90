@@ -526,8 +526,8 @@ CONTAINS
 !   partial derivatives of Ai_out w.r.t. independent variables
 !   A1_out = P_out ; A2_out = mu_no ; A3_out = mu_po
     DA_out_Du(1)    = ZERO
-    DA_out_Dn_no(1) = DP_o_Dn_no +  DP_alpha_Dn_no
-    DA_out_Dn_po(1) = DP_o_Dn_po +  DP_alpha_Dn_po
+    DA_out_Dn_no(1) = DP_o_Dn_no +  T*Dn_alpha_Dn_no
+    DA_out_Dn_po(1) = DP_o_Dn_po +  T*Dn_alpha_Dn_po
 !
     DA_out_Du(2)    = ZERO
     DA_out_Dn_no(2) = Dmu_no_Dn_no
