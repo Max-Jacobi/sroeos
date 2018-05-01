@@ -53,6 +53,13 @@ CONTAINS
     REAL(DP) :: sna_denerdd, sna_denerdy, sna_denerdt
     REAL(DP) :: nse_denerdd, nse_denerdy, nse_denerdt
 
+    real(dp) :: ele_ener,ele_pres,ele_entr, &
+                            ele_denerdt,ele_dpresdt,ele_dentrdt, &
+                            ele_denerdd,ele_dpresdd,ele_dentrdd, &
+                            ele_denerdy,ele_dpresdy,ele_dentrdy, &
+                            gam1,etaele,sound
+
+
     WRITE (*,*) 'Merge SNA EOS and NSE EOS.'
 
     keytemp = 1
@@ -107,6 +114,11 @@ CONTAINS
 !$OMP PRIVATE(rad,u,meffn,meffp,xa,xp,xn,xh,xl) &
 !$OMP PRIVATE(dsdn,dsdt,dsdy,dpdn,dpdt,dpdy,dedn,dedt,dedy) &
 !$OMP PRIVATE(free,gam,fac,cs2,dpdrhoe,dpderho) &
+!$OMP PRIVATE(ele_ener,ele_pres,ele_entr) &
+!$OMP PRIVATE(ele_denerdt,ele_dpresdt,ele_dentrdt) &
+!$OMP PRIVATE(ele_denerdd,ele_dpresdd,ele_dentrdd) &
+!$OMP PRIVATE(ele_denerdy,ele_dpresdy,ele_dentrdy) &
+!$OMP PRIVATE(gam1,etaele,sound) &
 !$OMP SHARED(final_tab)
     DO i_yp = yp_ini, yp_fin
       xe = Yp_min + dble(i_Yp-1)*Yp_step
@@ -221,7 +233,7 @@ CONTAINS
                 + dens*dens*dadn*(sna_free-nse_free)
           ! combine pressure derivatives
           dpdn = a_n*sna_dpresdd + (one-a_n)*nse_dpresdd&
-                    + (sna_pres-nse_pres)*dadn &
+                    + two*(sna_pres-nse_pres)*dadn &
                     + two*dens*(sna_free-nse_free)*dadn &
                     + dens*dens*(sna_free-nse_free)*d2adn2
           dpdy = a_n*sna_dpresdy + (one-a_n)*nse_dpresdy &
@@ -242,7 +254,7 @@ CONTAINS
           nse_denerdt = temp*nse_dentrdt
           dedt        = a_n*sna_denerdt + (one-a_n)*nse_denerdt
           ! combine entropy derivatives
-          dsdn = a_n*sna_dentrdd + (one-a_n)*nse_dentrdd&
+          dsdn = a_n*sna_dentrdd + (one-a_n)*nse_dentrdd &
                 + (sna_entr-nse_entr)*dadn
           dsdy = a_n*sna_dentrdy + (one-a_n)*nse_dentrdy
           dsdt = a_n*sna_dentrdt + (one-a_n)*nse_dentrdt
@@ -310,6 +322,50 @@ CONTAINS
           dedt    = dedt*energy_EOS_to_cgs
 
           final_tab(i_n,i_t,i_yp,9:13) = (/dedt,dpdrhoe,dpderho,gam,cs2/)
+
+
+
+!          if (cs2<0. ) then
+
+!            abar = xn+xp+xa/four
+!            if (xh  > 0.d0) &
+!              abar = xn+xp+xa/four+xh/abar
+!            if (xl > 0.d0) &
+!              abar = xn+xp+xa/four+xl/albar
+!            if (xh > 0.d0 .and. xl > 0.d0) &
+!            abar = xn+xp+xa/four+xh/abar+xl/albar
+
+!            abar = one/abar
+!            zbar = xe*abar
+
+!         get lepton+photon part of EoS
+!          IF (isnan(abar).OR.isnan(zbar).OR.abar<=1.d-10.OR.zbar<=1.d-10) THEN
+!            WRITE (*,"(A26,15ES14.6)") 'Error at (y,T,n) : ', xe, temp, dens
+!            CYCLE
+!          ENDIF
+
+!          CALL wrap_timmes(abar,zbar,dens_cgs,temp_cgs, &
+!                            ele_ener,ele_pres,ele_entr, &
+!                            ele_denerdt,ele_dpresdt,ele_dentrdt, &
+!                            ele_denerdd,ele_dpresdd,ele_dentrdd, &
+!                            ele_denerdy,ele_dpresdy,ele_dentrdy, &
+!                            gam1,etaele,sound)
+
+!!$OMP CRITICAL
+!            write (*,"(12ES15.6)") dens, temp, xe, a_n, dadn, d2adn2
+!            write (*,"(12ES15.6)") ele_pres*press_cgs_to_EOS, zero, ele_dpresdd*press_cgs_to_EOS/rho_cgs_to_EOS, & 
+!                                   ele_dpresdt*press_cgs_to_EOS*temp_mev_to_kelvin, &
+!                                   ele_denerdt*energy_cgs_to_EOS*temp_mev_to_kelvin
+!            write (*,"(12ES15.6)") sna_pres, sna_free, sna_dpresdd, sna_dpresdy, sna_dpresdt, sna_denerdt
+!            write (*,"(12ES15.6)") nse_pres, nse_free, nse_dpresdd, nse_dpresdy, nse_dpresdt, nse_denerdt
+!            write (*,"(12ES15.6)") pres, zero, dpdn, dpdt, dedt/energy_EOS_to_cgs, &
+!                                   a_n*sna_dpresdd + (one-a_n)*nse_dpresdd, & 
+!                                   two*(sna_pres-nse_pres)*dadn, &
+!                                   two*dens*(sna_free-nse_free)*dadn, &
+!                                   dens*dens*(sna_free-nse_free)*d2adn2
+!            pause
+!!$OMP END CRITICAL
+!          endif
 
           final_tab(i_n,i_t,i_yp,14:15) = (/rad,u/)
           final_tab(i_n,i_t,i_yp,25:26) = (/meffn,meffp/) 
