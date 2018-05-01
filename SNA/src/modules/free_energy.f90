@@ -248,7 +248,10 @@ CONTAINS
       F_i  = ZERO
       F_TR = ZERO
       F_SC = ZERO
-      IF (objective == 0) RETURN
+      IF (objective == 0) THEN
+        F_o = exc_v_alpha*F_o
+        RETURN
+      ENDIF
     ENDIF
 
     IF (objective == 2 .or. objective == 3 .or. objective ==4) THEN
