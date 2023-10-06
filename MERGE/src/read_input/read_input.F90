@@ -245,7 +245,7 @@ CONTAINS
     CALL CHECK_RANGE_DP('Log10T_max',Log10T_max,-4.D0,2.5D0)
     CALL CHECK_ORDER(Log10T_min,'Log10T_min',Log10T_max,'Log10T_max')
 
-    IF (log10n_spacing .NE. ZERO) THEN
+    IF (log10T_spacing .NE. ZERO) THEN
       CALL CHECK_RANGE_DP('log10T_spacing',log10T_spacing,1.D-3,1.D-1)
       steps_per_decade_in_T = 1.D0/log10T_spacing
     ELSEIF (steps_per_decade_in_T .NE. 0) THEN
@@ -376,7 +376,7 @@ CONTAINS
     CHARACTER(LEN=*), INTENT(IN) :: char_lower, char_upper
     REAL(DP), INTENT(IN) :: lower_limit, upper_limit
 
-    IF (upper_limit <= lower_limit) THEN
+    IF (upper_limit < lower_limit) THEN
       WRITE (*,*)
       WRITE (*,*) 'Input variable ', char_lower, &
                   'should not be larger than input variable limit ', char_upper
