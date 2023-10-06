@@ -15,6 +15,7 @@
 !
 MODULE Determine_Surface_Properties_Mod
 
+  USE Global_Variables_Mod, ONLY: input_skyrme_filename
   USE Kind_Types_Mod, ONLY : DP, I4B, LGCL
   USE Surface_Properties_Mod
   USE Fit_Critical_Temperature_Mod
@@ -48,7 +49,7 @@ CONTAINS
     fit_surface = .true.
     fix_heavy_nuclei_size = .false.
 
-    OPEN(10,FILE='input/skyrme.in',FORM='FORMATTED',STATUS='OLD',ACTION='READ')
+    OPEN(10,FILE=input_skyrme_filename,FORM='FORMATTED',STATUS='OLD',ACTION='READ')
     READ(10,NML=SURFACE_PROPERTIES,IOSTAT=io_stat)
     READ(10,NML=HEAVY_NUCLEI_SIZE,IOSTAT=io_stat)
     CLOSE(10)

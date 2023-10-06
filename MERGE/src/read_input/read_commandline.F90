@@ -14,16 +14,30 @@
 !    along with SRO_EOS.  If not, see <http://www.gnu.org/licenses/>.
 !
 
-MODULE Global_Variables_Mod
+MODULE Read_Commandline_Mod
 
-  USE Kind_Types_Mod, ONLY : DP, I4B, LGCL
-
+  USE Input_Files_Mod
   IMPLICIT NONE
 
-  SAVE
+  contains
 
-  LOGICAL(LGCL) :: IS_TEST
-  character(len=256) :: input_space_filename
-  character(len=256) :: input_skyrme_filename
+  SUBROUTINE READ_COMMANDLINE
 
-END MODULE Global_Variables_Mod
+    IMPLICIT NONE
+
+    integer :: num_args
+
+    num_args = command_argument_count()
+
+    if (num_args .ne. 3) then
+      write(*,*) 'Usage: merge_eos <input_tables> <input_space> <input_transition>'
+      stop
+    end if
+
+    call get_command_argument(1, input_tables)
+    call get_command_argument(2, input_space)
+    call get_command_argument(3, input_transition)
+
+  END SUBROUTINE READ_COMMANDLINE
+
+END MODULE Read_Commandline_Mod

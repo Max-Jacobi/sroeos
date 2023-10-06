@@ -15,6 +15,7 @@
 !
 PROGRAM MERGE_EOS
 
+    USE Read_Commandline_Mod
     USE Read_Input_Mod
     use Read_Table_Mod
     use MERGE_TABLES_MOD
@@ -63,6 +64,8 @@ PROGRAM MERGE_EOS
 !  call subroutine that reads input parameters
 !   that define the range of validity of each table
 !   and the names of the tables to be merged
+
+  CALL READ_COMMANDLINE
 
   WRITE (*,*)
   WRITE (*,*)  'Read file input/space.in'

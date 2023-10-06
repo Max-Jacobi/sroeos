@@ -14,16 +14,26 @@
 !    along with SRO_EOS.  If not, see <http://www.gnu.org/licenses/>.
 !
 
-MODULE Global_Variables_Mod
+MODULE Read_Commandline_Mod
 
-  USE Kind_Types_Mod, ONLY : DP, I4B, LGCL
+  USE GLOBAL_VARIABLES_MOD
 
   IMPLICIT NONE
 
-  SAVE
+  contains
 
-  LOGICAL(LGCL) :: IS_TEST
-  character(len=256) :: input_space_filename
-  character(len=256) :: input_skyrme_filename
+  SUBROUTINE READ_COMMANDLINE
+    integer :: num_args
 
-END MODULE Global_Variables_Mod
+    num_args = command_argument_count()
+
+    if (num_args .ne. 2) then
+      write(*,*) 'Usage: sro_eos input_space_filename input_skyrme_filename'
+      stop
+    end if
+
+    call get_command_argument(1, input_space_filename)
+    call get_command_argument(2, input_skyrme_filename)
+  END SUBROUTINE READ_COMMANDLINE
+
+END MODULE Read_Commandline_Mod

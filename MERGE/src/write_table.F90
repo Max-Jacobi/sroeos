@@ -18,6 +18,7 @@ module write_table
   USE Kind_Types_Mod
   USE Tables_Input_Mod
   USE Table_Sizes_Mod
+  USE Input_Files_Mod
   USE hdf5
   USE h5_writer
   USE physical_constants_mod, ONLY : energy_EOS_to_cgs
@@ -171,22 +172,22 @@ module write_table
     call copy_src_input(trim(adjustl(nse_eos))//C_NULL_CHAR,&
          trim(adjustl(sna_eos))//C_NULL_CHAR,&
          trim(adjustl(h5_filename))//C_NULL_CHAR,inse,isna)
-    
+
     ! now include MERGE code and input files
     call include_src_input(trim(adjustl(h5_filename))//C_NULL_CHAR,&
          trim(adjustl("src.tar.gz"))//C_NULL_CHAR,&
          trim(adjustl("MERGE-src.tar.gz"))//C_NULL_CHAR)
 
     call include_src_input(trim(adjustl(h5_filename))//C_NULL_CHAR,&
-         trim(adjustl("input/space.in"))//C_NULL_CHAR,&
+         trim(adjustl(input_space))//C_NULL_CHAR,&
          trim(adjustl("MERGE-space.in"))//C_NULL_CHAR)
 
     call include_src_input(trim(adjustl(h5_filename))//C_NULL_CHAR,&
-         trim(adjustl("input/tables.in"))//C_NULL_CHAR,&
+         trim(adjustl(input_tables))//C_NULL_CHAR,&
          trim(adjustl("MERGE-tables.in"))//C_NULL_CHAR)
 
     call include_src_input(trim(adjustl(h5_filename))//C_NULL_CHAR,&
-         trim(adjustl("input/transition.in"))//C_NULL_CHAR,&
+         trim(adjustl(input_transition))//C_NULL_CHAR,&
          trim(adjustl("MERGE-transition.in"))//C_NULL_CHAR)
 
   end subroutine output

@@ -101,6 +101,7 @@ F90_OBJS=\
 	obj/test_input.o \
 	obj/phase_space.o \
 	obj/read_input.o \
+	obj/read_commandline.o \
 	obj/h5_writer.o \
 	obj/allocatable_tables.o \
 	obj/allocate_tables.o \

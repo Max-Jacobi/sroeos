@@ -41,6 +41,7 @@ OBJECTS=obj/kind_types.o \
 	obj/tables.o \
 	obj/transition.o \
 	obj/read_input.o \
+	obj/read_commandline.o \
 	obj/readtable.o \
 	obj/get_eos.o \
 	obj/write_table.o \

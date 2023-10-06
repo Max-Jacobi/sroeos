@@ -17,6 +17,7 @@
 PROGRAM Main
   ! Use modules
   USE Read_Input_Mod, only : READ_MAIN_INPUT
+  USE Read_Commandline_Mod, only : READ_COMMANDLINE
   USE Read_Skyrme_Coefficients_Mod, ONLY : READ_SKYRME_COEFFICIENTS
   USE Determine_Nuclear_Properties_Mod
   USE Determine_Surface_Properties_Mod
@@ -55,6 +56,10 @@ PROGRAM Main
   write(6,*)
   write(6,*) "******************************************************************************"
   call sleep(5)
+
+  WRITE (*,*)
+  WRITE (*,*) 'Step 0: Read in Command Line Arguments'
+  CALL READ_COMMANDLINE
 
 
   WRITE (*,*)

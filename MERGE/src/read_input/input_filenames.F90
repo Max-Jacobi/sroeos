@@ -20,8 +20,8 @@ MODULE Input_Files_Mod
 
   SAVE
 
-  CHARACTER(LEN=256), parameter :: input_tables = "input/tables.in"
-  CHARACTER(LEN=256), parameter :: input_space = "input/space.in"
-  CHARACTER(LEN=256), parameter :: input_transition = "input/transition.in"
+  CHARACTER(LEN=256) :: input_tables
+  CHARACTER(LEN=256) :: input_space
+  CHARACTER(LEN=256) :: input_transition
 
 END MODULE Input_Files_Mod
