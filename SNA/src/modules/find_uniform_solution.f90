@@ -193,7 +193,7 @@ CONTAINS
     INTEGER(I4B) :: error, flag
     INTEGER(I4B), PARAMETER :: n_dim = 1
 
-    IF (x_inout(1) /= zero) THEN
+    IF (ABS(x_inout(1)) > 1e-100) THEN
       ! if initial guess for solution not zero
       ! then try points near initial guess
       ! Yp/10 <= Xp <= Yp*10 with dXp = 10^(1/20)
@@ -228,7 +228,7 @@ CONTAINS
     IF (IS_TEST) WRITE (*,*) log10(Yp)-dble(imin)/denom, ' < X_p < ', &
                              log10(Yp)-dble(imax)/denom, imin, imax
 
-    IF (x_inout(1) == zero) THEN
+    IF (ABS(x_inout(1)) < 1.d-100) THEN
       DO i = imin, imax
 !       set initial guess for nucleon densities
 !       based on whether system is neutron or proton rich
