@@ -1,0 +1,20 @@
+# Include compiler and flags
+
+ F95        = gfortran
+ CXX        = g++
+ CXXFLAGS   = -O3 -g -fPIC
+ OPTION     = -O3 -g -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132 -z noexecstack -fPIC
+ LDFLAGS    =
+
+
+HDF5DIR=/usr
+HDF5LIBS=-L$(HDF5DIR)/lib/ -lhdf5_fortran -lhdf5
+HDF5INCS=-I$(HDF5DIR)/include/
+
+LAPACKDIR=/usr/lib
+LAPACKLIBS=-L$(LAPACKDIR) -llapack
+
+BLASDIR=/usr/lib
+BLASLIBS=-L$(BLASDIR) -lblas
+
+MODDIR=-Jmod

@@ -1,0 +1,14 @@
+F95        = ifort
+CXX        = icpc
+CXXFLAGS   = -O3 -g 
+OPTION     = -O3 -g -fopenmp -fpp -cpp
+LDFLAGS    = -fpp -cpp
+
+HDF5DIR=/home/tools/libraries
+HDF5LIBS=-L$(HDF5DIR)/lib -lhdf5_fortran -lhdf5 -lz
+HDF5INCS=-I$(HDF5DIR)/include/
+
+LAPACKDIR=/home/tools/compiler/intel/compilers_and_libraries_2018/linux/mkl/lib/intel64_lin
+LAPACKLIBS=-L$(LAPACKDIR) -qmkl
+
+MODDIR=-module mod
