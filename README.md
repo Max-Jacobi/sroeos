@@ -1,5 +1,6 @@
 Schneider-Roberts-Ott Equation of State (SRO EOS)
 =================================================
+This is my fork from https://bitbucket.org/andschn/sroeos.git
 
 Reference:
 
