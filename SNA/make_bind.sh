@@ -1,0 +1,11 @@
+cd src
+OBJ="obj/nwprnt.o obj/lautil.o obj/nwutil.o obj/liqrev.o obj/limhpar.o obj/nwtrup.o obj/nwpdlg.o obj/nwddlg.o obj/nwglsh.o obj/nwqlsh.o obj/nwclsh.o obj/nwpure.o obj/liqrup.o obj/nwmhlm.o obj/nwbjac.o obj/nwnjac.o obj/nwbrdn.o obj/nwnwtn.o obj/nwnleq.o obj/global_variables.o obj/phase_space_point.o obj/physical_constants.o obj/print_parameters.o obj/unused.o obj/polynomial_fit.o obj/fermi_integrals.o obj/Levenberg_Marquardt.o obj/LU_decomposition.o obj/eleos_variables.o obj/vector_eos_module.o obj/fdfunctions.o obj/functions.o obj/ls_modified_timmes.o obj/electron_eos.o obj/nuclear_properties.o obj/make_tables.o obj/skyrme_coefficients.o obj/Skyrme_bulk.o obj/Skyrme_bulk_density_derivatives.o obj/Skyrme_bulk_eta_derivatives.o obj/Skyrme_bulk_temperature_derivatives.o obj/Skyrme_bulk_observables.o obj/symmetry_energy.o obj/determine_nuclear_properties.o obj/read_skyrme_coefficients.o obj/surface_properties.o obj/find_critical_point.o obj/fit_critical_temperature.o obj/find_surface_equilibrium.o obj/surface_tension.o obj/minimize_surface_tension.o obj/nuclear_surface_tension.o obj/nuclear_surface_fit.o obj/function_delu_subroutine.o obj/function_beta_subroutine.o obj/function_sigma_subroutine.o obj/function_critical_temperature.o obj/function_h_subroutine.o obj/heavy_nuclei_radius.o obj/heavy_nuclei_mass_number.o obj/heavy_nuclei_chemical_potential.o obj/free_energy_heavy_surface.o obj/free_energy_heavy_translation.o obj/free_energy_heavy.o obj/alpha_properties.o obj/surface_observables.o obj/determine_surface_properties.o obj/uniform_total_derivatives.o obj/non_uniform_total_derivatives.o obj/outside_properties.o obj/heavy_properties.o obj/free_energy.o obj/find_uniform_solution.o obj/find_non_uniform_solution.o obj/print_test.o obj/main_output.o obj/get_output.o obj/test_input.o obj/phase_space.o obj/read_input.o obj/h5_writer.o obj/allocatable_tables.o obj/allocate_tables.o obj/save_to_table.o obj/write_to_table.o obj/solve.o obj/include_src_input.o"
+
+f2py -c -m sro --f77exec=gfortran --f90exec=gfortran \
+     --f90flags="-O3 -g -fopenmp -fcheck=all -finit-local-zero -ffree-line-length-132 -fPIC -z noexecstack " \
+     -L/usr/lib -llapack -L/usr/lib -lblas -I/usr/include/ -L/usr/lib/ -lhdf5_fortran -lhdf5 -lgomp -lstdc++ -lpython3.11 -Imod \
+     nmps.F90 $OBJ
+
+mv sro.cpython-311-x86_64-linux-gnu.so ..
+
+cd ..

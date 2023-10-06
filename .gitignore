@@ -12,8 +12,10 @@ version.inc
 *.log
 *.out
 *.toc
+*.so
 make.inc
 main
 test
 merge_eos
 *.dSYM
+*/__pycache__
