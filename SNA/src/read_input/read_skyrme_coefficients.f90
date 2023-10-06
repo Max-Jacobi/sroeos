@@ -38,7 +38,7 @@ MODULE Read_Skyrme_Coefficients_Mod
 
     REAL(DP) :: Dummy_a, Dummy_b, n_sat, e_bind, stiffening_ratio, &
     stiffening_exponent, stiffening_symmetry
-    CHARACTER(LEN=128) :: command
+    CHARACTER(LEN=256) :: command
 
     NAMELIST /TABLE_INPUT/ make_hdf5_table, write_solutions_to_file, & 
                            redefine_print_parameters, &
@@ -267,7 +267,7 @@ MODULE Read_Skyrme_Coefficients_Mod
     CHARACTER(*), PARAMETER :: OUTPUT_FORMAT_1 = "(1A2,1I1,1A7,1ES20.12,1A18)"
     CHARACTER(*), PARAMETER :: OUTPUT_FORMAT_2 = "(1A6,1I1,1A3,1ES20.12,1A20)"
     CHARACTER(*), PARAMETER :: OUTPUT_FORMAT_3 = "(1A3,1I1,1A6,1ES20.12,1A20)"
-    CHARACTER(LEN=128) :: File_Name
+    CHARACTER(LEN=256) :: File_Name
 
 
     File_Name = ADJUSTL(TRIM(output_directory)) // &

@@ -57,7 +57,7 @@ CONTAINS
     LOGICAL(LGCL) :: T_LARGER_THAN_Tcrit, n_LARGER_THAN_nmax, n_SMALLER_THAN_nmin
     LOGICAL(LGCL) :: non_uniform_sol_found_for_T
 
-    CHARACTER(LEN=64) :: filename1, filename2, string_Yp, outdir
+    CHARACTER(LEN=256) :: filename1, filename2, string_Yp, outdir
     INTEGER(I4B) :: filenumber1, filenumber2, nthreads
 
     REAL(DP) :: wtime

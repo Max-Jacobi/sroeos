@@ -26,7 +26,7 @@ MODULE Make_Tables_Mod
   LOGICAL(LGCL) ::  write_solutions_to_file
   LOGICAL(LGCL) ::  redefine_print_parameters
 
-  CHARACTER(LEN=32)  :: filename_base, output_directory
+  CHARACTER(LEN=256)  :: filename_base, output_directory
 
   include "../version.inc"
 

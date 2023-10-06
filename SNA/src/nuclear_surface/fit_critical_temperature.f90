@@ -33,7 +33,7 @@ CONTAINS
     INTEGER(I4B) :: i, j, imax
 
     CHARACTER(*), PARAMETER :: OUTPUT_FORMAT   = "(1A10,1ES20.12,1A10)"
-    CHARACTER(LEN=64) :: File_Name
+    CHARACTER(LEN=256) :: File_Name
 
     REAL(DP) :: prot_frac, temp, Tcrit
     REAL(DP), DIMENSION(2) :: x2

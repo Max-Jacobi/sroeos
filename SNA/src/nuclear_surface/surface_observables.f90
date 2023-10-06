@@ -29,7 +29,7 @@ CONTAINS
 
     IMPLICIT NONE
 
-    CHARACTER(LEN=64) :: File_Name
+    CHARACTER(LEN=256) :: File_Name
     CHARACTER(*), PARAMETER :: OUTPUT_FORMAT   = "(1A20,1ES23.15,1A20)"
 
     INTEGER(I4B) :: derivatives

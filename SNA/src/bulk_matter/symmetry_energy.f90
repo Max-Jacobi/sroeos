@@ -47,7 +47,7 @@ CONTAINS
     REAL(DP) :: dummy_coeff, x0
     REAL(DP), DIMENSION(:), ALLOCATABLE :: dummy, expt
     REAL(DP), PARAMETER :: eps = 1.0D-4
-    CHARACTER(LEN=64) :: sym_file
+    CHARACTER(LEN=256) :: sym_file
 
     sym_file = trim(output_directory) // '/symmetry.dat'
 

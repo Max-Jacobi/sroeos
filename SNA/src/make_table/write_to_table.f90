@@ -42,7 +42,7 @@ CONTAINS
     CHARACTER(LEN=8) :: date
     REAL(DP) :: timestamp
 
-    CHARACTER(LEN=128) h5_filename
+    CHARACTER(LEN=256) h5_filename
     CHARACTER(LEN=100) :: gitinfo, string_n, string_T, string_Ye
 
   ! Variables needed for output
