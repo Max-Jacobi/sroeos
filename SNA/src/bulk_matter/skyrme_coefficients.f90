@@ -41,7 +41,11 @@ MODULE Skyrme_Coefficients_Mod
   REAL(DP), DIMENSION(:), ALLOCATABLE :: Coeff_c, Coeff_d
   REAL(DP), DIMENSION(:), ALLOCATABLE :: Coeff_delta
 
-  REAL(DP) :: Coeff_alpha1, Coeff_alpha2
+  REAL(DP) :: Coeff_alpha1, Coeff_alpha2, Coeff_alpha3
+  REAL(DP) :: Coeff_beta1, Coeff_beta2, Coeff_beta3
+  REAL(DP) :: Coeff_eps_n, Coeff_eps_p
+  REAL(DP) :: Coeff_n_off
+
   REAL(DP) :: Coeff_qnn, Coeff_qpp
   REAL(DP) :: Coeff_qnp, Coeff_qpn
 

@@ -20,6 +20,7 @@ MODULE Skyrme_Bulk_Density_Derivatives_Mod
   USE Skyrme_Coefficients_Mod
   USE Fermi_Integrals_Mod
   USE Skyrme_Bulk_Mod
+  USE Meff_bulk_mod
 
   IMPLICIT NONE
 
@@ -34,7 +35,8 @@ CONTAINS
     DP_d_n_n,    DP_d_n_p)
 
     USE Physical_Constants_Mod, &
-        ONLY : ONE, TWO, THREE, FOUR, Hbarc_Square, &
+        ONLY : ONE, TWO, THREE, FOUR, TWO_PI_SQUARE, Hbarc_Square, &
+               R_5_2, R_3_2, &
                Mass_n, Mass_p, Neut_Prot_Mass_Diff
 
     IMPLICIT NONE
@@ -56,10 +58,44 @@ CONTAINS
     REAL(DP) :: V_II, V_IJ
     REAL(DP) :: W_nn, W_np, W_pn, W_pp
     REAL(DP) :: P, F
+    REAL(DP) :: eff_n_n, eff_n_p
+    REAL(DP) :: two_mneut_t, two_mprot_t
+    REAL(DP) :: DMeff_n_Dn_n, DMeff_n_Dn_p, DMeff_p_Dn_n, DMeff_p_Dn_p
+    REAL(DP) :: DMeff_n_D2n_nn, DMeff_n_D2n_np, DMeff_n_D2n_pp
+    REAL(DP) :: DMeff_p_D2n_nn, DMeff_p_D2n_np, DMeff_p_D2n_pp
+
+!   neutron and proton effective densities
+!    used to avoind underflow/overflow in calculations below
+    eff_n_n = max(log10_n_n,log10_dens_min)
+    eff_n_n = min(eff_n_n,log10_dens_max)
+    eff_n_n = ten**eff_n_n
+
+    eff_n_p = max(log10_n_p,log10_dens_min)
+    eff_n_p = min(eff_n_p,log10_dens_max)
+    eff_n_p = ten**eff_n_p
+
+    n_n = eff_n_n
+    n_p = eff_n_p
+
+    n = n_n + n_p
+    y = n_p/n
 
     CALL SKYRME_BULK_PROPERTIES(log10_n_n,log10_n_p,T,&
       n_n,n_p,n,y,Meff_n,Meff_p,eta_n,eta_p, &
       tau_n,tau_p,v_n,v_p,mu_n,mu_p,P,F)
+
+    CALL MEFF_BULK( &
+      log10_n_n, log10_n_p, Temperature, &
+      Meff_n, Meff_p, &
+      DMeff_n_Dn_n, DMeff_n_Dn_p, &
+      DMeff_p_Dn_n, DMeff_p_Dn_p, &
+      DMeff_n_D2n_nn, DMeff_n_D2n_np, DMeff_n_D2n_pp, &
+      DMeff_p_D2n_nn, DMeff_p_D2n_np, DMeff_p_D2n_pp &
+    )
+
+!   neutron and proton degeneracy parameters eta
+    two_mneut_t = two*Meff_n*Temperature
+    two_mprot_t = two*Meff_p*Temperature
 
   !   obtain G_t = 2*F_{+1/2}(eta_t)/F_{-1/2}(eta_t)
     IF (eta_n<-200.0_DP) THEN
@@ -74,22 +110,31 @@ CONTAINS
       G_p = TWO*FHALF(eta_p)
     ENDIF
 
+  !  eta derivatives
+    Deta_n_Dn_n = G_n/n_n*(ONE + R_3_2*n_n/Meff_n*Dmeff_n_Dn_n)
+
+    Deta_n_Dn_p = G_n/n_n*(      R_3_2*n_n/Meff_n*Dmeff_n_Dn_p)
+
+    Deta_p_Dn_n = G_p/n_p*(      R_3_2*n_p/Meff_p*Dmeff_p_Dn_n)
+
+    Deta_p_Dn_p = G_p/n_p*(ONE + R_3_2*n_p/Meff_p*Dmeff_p_Dn_p)
+
   !   tau derivatives
-    Dtau_n_Dn_n = Meff_n/Hbarc_Square*( THREE*T*G_n &
-       +(9.0_DP*Meff_n*T*n_n*G_n/Hbarc_Square &
-       - 5.0_DP*tau_n)*coeff_alpha1)
+    Dtau_n_Dn_n = &
+        R_3_2 * n_n * two_mneut_t/hbarc_square * Deta_n_Dn_n &
+        + R_5_2 * tau_n/Meff_n * Dmeff_n_Dn_n
 
-    Dtau_n_Dn_p = Meff_n/Hbarc_Square*( &
-        (9.0_DP*Meff_n*T*n_n*G_n/Hbarc_Square &
-       - 5.0_DP*tau_n)*coeff_alpha2)
+    Dtau_n_Dn_p = &
+        R_3_2 * n_n * two_mneut_t/hbarc_square * Deta_n_Dn_p &
+        + R_5_2 * tau_n/Meff_n * Dmeff_n_Dn_p
 
-    Dtau_p_Dn_n = Meff_p/Hbarc_Square*( &
-        (9.0_DP*Meff_p*T*n_p*G_p/Hbarc_Square &
-       - 5.0_DP*tau_p)*coeff_alpha2)
+    Dtau_p_Dn_n = &
+        R_3_2 * n_p * two_mprot_t/hbarc_square * Deta_p_Dn_n &
+        + R_5_2 * tau_p/Meff_p * Dmeff_p_Dn_n
 
-    Dtau_p_Dn_p = Meff_p/Hbarc_Square*( THREE*T*G_p &
-       +(9.0_DP*Meff_p*T*n_p*G_p/Hbarc_Square &
-       - 5.0_DP*tau_p)*coeff_alpha1)
+    Dtau_p_Dn_p = &
+        R_3_2 * n_p * two_mprot_t/hbarc_square * Deta_p_Dn_p &
+        + R_5_2 * tau_p/Meff_p * Dmeff_p_Dn_p
 
   !   v derivatives
     V_II = TWO*COEFF_A + DOT_PRODUCT(COEFF_C*COEFF_DELTA*(ONE+COEFF_DELTA), &
@@ -110,22 +155,35 @@ CONTAINS
     W_pp = V_II + 8.0_DP*DOT_PRODUCT(COEFF_D*(COEFF_DELTA-ONE),&
            EXP((COEFF_DELTA-TWO)*LOG(n)+LOG(n_n)))
 
-    Dv_n_Dn_n = COEFF_ALPHA1*Dtau_n_Dn_n + COEFF_ALPHA2*Dtau_p_Dn_n + W_nn
 
-    Dv_n_Dn_p = COEFF_ALPHA1*Dtau_n_Dn_p + COEFF_ALPHA2*Dtau_p_Dn_p + W_np
+    Dv_n_Dn_n = - hbarc_square/2 * ( &
+        (Dtau_n_Dn_n * DMeff_n_Dn_n + tau_n * DMeff_n_D2n_nn) / (Meff_n**2) &
+        - 2*tau_n * DMeff_n_Dn_n**2 / (Meff_n**3) &
+        + (Dtau_p_Dn_n * DMeff_p_Dn_n + tau_p * DMeff_p_D2n_nn) / (Meff_p**2) &
+        - 2*tau_p * DMeff_p_Dn_n**2 / (Meff_p**3) &
+        ) + W_nn
 
-    Dv_p_Dn_n = COEFF_ALPHA1*Dtau_p_Dn_n + COEFF_ALPHA2*Dtau_n_Dn_n + W_pn
+    Dv_n_Dn_p = - hbarc_square/2 * ( &
+        (Dtau_n_Dn_p*DMeff_n_Dn_n  + tau_n*DMeff_n_D2n_np) / (Meff_n**2) &
+        - 2*tau_n * DMeff_n_Dn_n * DMeff_n_Dn_p / (Meff_n**3) &
+        + (Dtau_p_Dn_p*DMeff_p_Dn_n  + tau_p*DMeff_p_D2n_np) / (Meff_p**2) &
+        - 2*tau_p * DMeff_p_Dn_n * DMeff_p_Dn_p / (Meff_p**3) &
+        ) + W_np
 
-    Dv_p_Dn_p = COEFF_ALPHA1*Dtau_p_Dn_p + COEFF_ALPHA2*Dtau_n_Dn_p + W_pp
+    Dv_p_Dn_n = - hbarc_square/2 * ( &
+        (Dtau_n_Dn_n*DMeff_n_Dn_p + tau_n*DMeff_n_D2n_pn) / (Meff_n**2) &
+        - 2*tau_n * DMeff_n_Dn_p * DMeff_n_Dn_n / (Meff_n**3) &
+        (Dtau_p_Dn_n*DMeff_p_Dn_p + tau_p*DMeff_p_D2n_pn) / (Meff_p**2) &
+        - 2*tau_p * DMeff_p_Dn_p * DMeff_p_Dn_n / (Meff_p**3) &
+        ) + W_pn
 
-  !  eta derivatives
-    Deta_n_Dn_n = G_n/n_n*(one + three/hbarc_square*n_n*Meff_n*coeff_alpha1)
+    Dv_p_Dn_p = - hbarc_square/2 * ( &
+        (Dtau_n_Dn_p * DMeff_n_Dn_p + tau_n * DMeff_n_D2n_pp) / (Meff_n**2) &
+        - 2*tau_n * DMeff_n_Dn_p**2 / (Meff_n**3) &
+        + (Dtau_p_Dn_p * DMeff_p_Dn_p + tau_p * DMeff_p_D2n_pp) / (Meff_p**2) &
+        - 2*tau_p * DMeff_p_Dn_p**2 / (Meff_p**3) &
+        ) + W_pp
 
-    Deta_n_Dn_p = G_n/n_n*(      three/hbarc_square*n_n*Meff_n*coeff_alpha2)
-
-    Deta_p_Dn_n = G_p/n_p*(      three/hbarc_square*n_p*Meff_p*coeff_alpha2)
-
-    Deta_p_Dn_p = G_p/n_p*(one + three/hbarc_square*n_p*Meff_p*coeff_alpha1)
 
   !   mu derivatives
     Dmu_n_Dn_n = T*Deta_n_Dn_n + Dv_n_Dn_n

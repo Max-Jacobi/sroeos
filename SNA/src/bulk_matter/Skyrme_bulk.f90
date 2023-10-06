@@ -16,6 +16,7 @@
 MODULE Skyrme_Bulk_Mod
 
   USE Kind_Types_Mod, ONLY : DP, I4B
+  USE Meff_bulk_mod
   !USE Define_Operators_Mod
   USE Skyrme_Coefficients_Mod
   USE Fermi_Integrals_Mod
@@ -24,11 +25,18 @@ MODULE Skyrme_Bulk_Mod
 
 CONTAINS
 
-  SUBROUTINE SKYRME_BULK_PROPERTIES(log10_n_n,log10_n_p,Temperature, &
-    n_n,n_p,n,y,Meff_n,Meff_p,eta_n,eta_p,tau_n,tau_p,v_n,v_p,mu_n,mu_p,P,F)
+   SUBROUTINE SKYRME_BULK_PROPERTIES( &
+       log10_n_n,log10_n_p,Temperature, &
+       n_n,n_p,n,y, &
+       Meff_n,Meff_p, &
+       eta_n,eta_p, &
+       tau_n,tau_p, &
+       v_n,v_p, &
+       mu_n,mu_p, &
+       P,F)
 
     USE Physical_Constants_Mod, &
-        ONLY : ZERO, ONE, TWO, FOUR, TEN, R_3_2, R_5_2, R_5_3, &
+        ONLY : ZERO, ONE, TWO, FOUR, TEN, R_3_2, R_5_2, R_5_3 &
                Hbarc_Square, PI, TWO_PI_SQUARE, &
                log10_dens_min, log10_dens_max, dens_min, dens_max, &
                Mass_n, Mass_p, Neut_Prot_Mass_Diff
@@ -44,6 +52,8 @@ CONTAINS
     REAL(DP), INTENT(OUT) :: v_n, v_p
     REAL(DP), INTENT(OUT) :: mu_n, mu_p
     REAL(DP), INTENT(OUT) :: P, F
+    REAL(DP) :: S, E
+    REAL(DP) :: DMeff_n_Dn_n, DMeff_n_Dn_p, DMeff_p_Dn_n, DMeff_p_Dn_p
     REAL(DP) :: eff_n_n, eff_n_p
     REAL(DP) :: two_mneut_t, two_mprot_t
 
@@ -75,11 +85,12 @@ CONTAINS
       n_n = eff_n_n
     ENDIF
 
-!   neutron and proton effective masses
-    Meff_n = (Hbarc_Square/two) / (Hbarc_Square/(two*Mass_n) &
-                          + coeff_alpha1*n_n + coeff_alpha2*n_p)
-    Meff_p = (Hbarc_Square/two) / (Hbarc_Square/(two*Mass_p) &
-                          + coeff_alpha1*n_p + coeff_alpha2*n_n)
+    call MEFF_BULK( &
+      log10_n_n, log10_n_p, Temperature, &
+      Meff_n, Meff_p, &
+      DMeff_n_Dn_n, DMeff_n_Dn_p, &
+      DMeff_p_Dn_n, DMeff_p_Dn_p &
+    )
 
 !   neutron and proton degeneracy parameters eta
     two_mneut_t = two*Meff_n*Temperature
@@ -115,14 +126,16 @@ CONTAINS
     tau_p = tau_p*fermi_three_halves(max(eta_p,-2.d2))/TWO_PI_SQUARE
 
 !   neutron and proton force potentials
-    v_n = coeff_alpha1*tau_n + coeff_alpha2*tau_p &
+    v_n = - hbarc_square/(2*Meff_n**2) * tau_n * DMeff_n_Dn_n &
+          - hbarc_square/(2*Meff_p**2) * tau_p * DMeff_p_Dn_n &
           + two*coeff_a*n + four*coeff_b*n_p &
           + dot_product(coeff_c*(one+coeff_delta),n**coeff_delta) &
           + dot_product(four*coeff_d*(coeff_delta-one)*n_n*n_p,&
             n**(coeff_delta-two)) &
           + dot_product(four*coeff_d*n_p,n**(coeff_delta-one))
 
-    v_p = coeff_alpha1*tau_p + coeff_alpha2*tau_n &
+    v_p = - hbarc_square/(2*Meff_n**2) * tau_n * DMeff_n_Dn_p &
+          - hbarc_square/(2*Meff_p**2) * tau_p * DMeff_p_Dn_p &
           + two*coeff_a*n + four*coeff_b*n_n &
           + dot_product(coeff_c*(one+coeff_delta),n**coeff_delta) &
           + dot_product(four*coeff_d*(coeff_delta-one)*n_n*n_p, &
@@ -134,15 +147,22 @@ CONTAINS
     mu_n = eta_n*Temperature+v_n
     mu_p = eta_p*Temperature+v_p
 
-!   pressure of bulk nucleons
-    P = Hbarc_Square/TWO*(R_5_3/Meff_n-ONE/Mass_n)*tau_n &
-      + Hbarc_Square/TWO*(R_5_3/Meff_p-ONE/Mass_p)*tau_p &
-      + coeff_a*n**two + four*coeff_b*n_p*n_n &
-      + dot_product(coeff_c*coeff_delta,n**(one+coeff_delta)) &
-      +four*dot_product(coeff_d*coeff_delta,n**(coeff_delta-one))*n_n*n_p
+!   energy of bulk nucleons
+    E = hbarc_square/two* (tau_n/Meff_n+tau_p/Meff_p) &
+    + coeff_a*n**two + four*coeff_b*n_n*n_p &
+    + DOT_PRODUCT(coeff_c,n**(coeff_delta+one)) &
+    + four*DOT_PRODUCT(coeff_d,n**(coeff_delta-one))*n_n*n_p
+
+!   entropy of bulk nucleons
+    S = R_5_3 * hbarc_square * tau_n / two_mneut_t &
+        + R_5_3 * hbarc_square * tau_p / two_mprot_t &
+        - n_n * eta_n - n_p * eta_p
 
 !   free energy of bulk nucleons
-    F = n_n*mu_n+n_p*mu_p-P
+    F = E - Temperature*S
+
+!   pressure of bulk nucleons
+    P = n_n*mu_n + n_p*mu_p - F
 
   END SUBROUTINE SKYRME_BULK_PROPERTIES
 
@@ -195,12 +215,7 @@ CONTAINS
     CALL SKYRME_BULK_PROPERTIES(log10_n_n,log10_n_p,Temperature,&
       n_n,n_p,n,y,Meff_n,Meff_p,eta_n,eta_p,tau_n,tau_p,v_n,v_p,mu_n,mu_p,P,F)
 
-    PRESSURE = Hbarc_Square/TWO*(R_5_3/Meff_n-ONE/Mass_n)*tau_n &
-             + Hbarc_Square/TWO*(R_5_3/Meff_p-ONE/Mass_p)*tau_p &
-             + coeff_a*n**two + four*coeff_b*n_p*n_n &
-             + dot_product(coeff_c*coeff_delta,n**(one+coeff_delta)) &
-             +four*dot_product(coeff_d*coeff_delta,n**(coeff_delta-one))*n_n*n_p
-
+    PRESSURE = P
   END FUNCTION SKYRME_BULK_PRESSURE
 
 END MODULE Skyrme_Bulk_Mod
