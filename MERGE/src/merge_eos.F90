@@ -68,16 +68,16 @@ PROGRAM MERGE_EOS
   CALL READ_COMMANDLINE
 
   WRITE (*,*)
-  WRITE (*,*)  'Read file input/space.in'
+  WRITE (*,*)  'Read file space input  file'
   CALL READ_SPACE_INPUT
 
 
   WRITE (*,*)
-  WRITE (*,*)  'Read file input/tables.in'
+  WRITE (*,*)  'Read file tables input file'
   CALL READ_OUTPUT_INPUT
 
   WRITE (*,*)
-  WRITE (*,*)  'Read file input/transition.in'
+  WRITE (*,*)  'Read file transition input file'
   CALL READ_TRANSITION_INPUT
 
 !  call subroutine that reads NSE EOS
