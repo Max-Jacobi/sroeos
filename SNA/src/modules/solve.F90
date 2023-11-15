@@ -116,7 +116,7 @@ CONTAINS
       ! n_transition is the maximum density where we expect a transition
       ! from uniform matter to non-uniform matter to occur.
       ! this value is updated every i_T loop and used at a lower temperature
-      n_transition_max = 1.d-1
+      n_transition_max = 1.6d-1
       n_transition_min = 2.d-2
 !       once temperature is very low and density lower than transition to
 !       non-uniform matter stop looking for uniform solution
@@ -333,14 +333,14 @@ CONTAINS
               IF (T>=1.0d0) n_transition = n*TEN**(1.D0/increment_n)
               IF (T> 3.0d0) n_transition = n*TEN**(2.D0/increment_n)
               IF (T> 5.0d0) n_transition = n*TEN**(3.D0/increment_n)
-              n_transition_max = min(n_transition,0.12d0)
+              ! n_transition_max = min(n_transition,0.12d0)
             ENDIF
 !           n_transition_min determines whether to try to check for solution at
 !           lower density. The choice made here ensures the code tried to find a
 !           solution down to 0.01 fm^-3, if no solution found at higher density
 !           or down to another two points in density phase space if a solution
 !           is found at n > 0.01 fm^-3.
-            n_transition_min = n/TEN**(TWO/increment_n)
+            ! n_transition_min = n/TEN**(TWO/increment_n)
             non_uniform_sol_found_for_T = .TRUE.
             IF (n_transition_min<TEN**Log10n_min) stop_check_uniform = .TRUE.
             ! write (*,*) Yp, T, n, n_transition_min, n_transition_max, &
