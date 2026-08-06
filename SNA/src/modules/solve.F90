@@ -372,9 +372,28 @@ CONTAINS
             x_nu_guess_n(i_n-1,i_t,1)=NON_UNIFORM_SOL(1)+dLog10_n_no_dn*delta_n
             x_nu_guess_n(i_n-1,i_t,2)=NON_UNIFORM_SOL(2)+dLog10_n_po_dn*delta_n
             x_nu_guess_n(i_n-1,i_t,3)=NON_UNIFORM_SOL(3)+dLog10_u_dn*delta_n
+          ELSEIF (non_uniform_solution) THEN
+!           heavy branch converged but lost the free-energy comparison
+!           (metastable): still seed downstream so the sweep can track the
+!           branch across the phase border. No derivative extrapolation --
+!           dLog10_* belong to the chosen (uniform) branch here.
+            x_nu_guess_T(i_n,i_t-1,1:3) = NON_UNIFORM_SOL(1:3)
+            x_nu_guess_n(i_n-1,i_t,1:3) = NON_UNIFORM_SOL(1:3)
           ELSE
-            x_nu_guess_t(i_n,i_T-1,:) = zero
-            x_nu_guess_n(i_n-1,i_T,:) = zero
+!           solve failed: carry the incoming guesses forward instead of
+!           zeroing them. A stale nearby guess beats a from-scratch search
+!           near the shallow heavy-branch root; zeroing lets one failure
+!           cascade into a shadow of missed solutions downstream.
+            IF (abs(x_nu_guess_T(i_n,i_T,3)) > zero) THEN
+              x_nu_guess_t(i_n,i_T-1,:) = x_nu_guess_T(i_n,i_T,:)
+            ELSE
+              x_nu_guess_t(i_n,i_T-1,:) = x_nu_guess_n(i_n,i_T,:)
+            ENDIF
+            IF (abs(x_nu_guess_n(i_n,i_T,3)) > zero) THEN
+              x_nu_guess_n(i_n-1,i_T,:) = x_nu_guess_n(i_n,i_T,:)
+            ELSE
+              x_nu_guess_n(i_n-1,i_T,:) = x_nu_guess_T(i_n,i_T,:)
+            ENDIF
           ENDIF
           CALL SAVE_TO_TABLE (i_n, i_T, i_Yp, n, Yp, T)
 
