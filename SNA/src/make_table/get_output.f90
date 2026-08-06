@@ -46,7 +46,13 @@ CONTAINS
 
     IF (sol_u .AND. sol_nu) THEN
       IF (IS_TEST) write (*,*) 'BOTH UNIFORM AND NON UNIFORM SOLUTION FOUND'
-      IF (f_nu > f_u) THEN
+!     Require the non-uniform branch to beat uniform by a relative margin:
+!     near the tip of the inhomogeneous phase the dying heavy branch
+!     asymptotes to the uniform free energy (x_heavy -> 0) and winner-
+!     take-all comparison leaves ghost/metastable heavy points with
+!     discontinuous mu_p. Margin >> solver tolerance (~1e-11), << any
+!     physical F difference across the genuine transition.
+      IF (f_nu > f_u - 1.0d-8*ABS(f_u)) THEN
         IF (IS_TEST) write (*,*) 'UNIFORM MATTER HAS LOWEST FREE ENERGY'
         X_p = TEN**x_u(1)
         objective = 3
