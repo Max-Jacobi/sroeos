@@ -81,7 +81,21 @@ CONTAINS
     if (ieee_is_nan(Z_heavy) .OR. Z_heavy < Yp ) zbar_tab(i_n, i_t, i_y) = Yp
 
     u_tab(i_n, i_t, i_y) = u
-    r_tab(i_n, i_t, i_y) = r
+!   r (heavy-nucleus / Wigner-Seitz radius) is only computed when a
+!   non-uniform solution is chosen. u and r are THREADPRIVATE module
+!   variables (Main_Output_Mod), so on the uniform branch r is never
+!   reassigned and the table keeps whatever the previously processed point
+!   left behind. u does not have this problem: the uniform branch sets
+!   log10_u = -290 in GET_OUTPUT, so u self-clears. Measured consequence of
+!   the stale r: values 0-4.73 fm at points with no nucleus, overlapping the
+!   genuine 3.27-6.97 fm range, so only x_heavy tells them apart -- and the
+!   table then depends on the density grid's extent (the first points of each
+!   T row inherit the last, lowest-n point of the previous row).
+    IF (u > 1.0d-100) THEN
+      r_tab(i_n, i_t, i_y) = r
+    ELSE
+      r_tab(i_n, i_t, i_y) = 0.d0
+    ENDIF
 
     if (ieee_is_nan(u)) u_tab(i_n,i_t,i_y) = 0.d0
     if (ieee_is_nan(r)) r_tab(i_n,i_t,i_y) = 0.d0
