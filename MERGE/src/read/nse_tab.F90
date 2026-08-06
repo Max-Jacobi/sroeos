@@ -38,7 +38,7 @@ CONTAINS
 
     REAL(DP) :: den,tem,ener,pres,entr
     REAL(DP) :: abar,zbar,albar,zlbar,xa,xn,xp,xh,xl
-    REAL(DP) :: rad,u,meffn,meffp
+    REAL(DP) :: rad,u,meffn,meffp,dU
     REAL(DP) :: denerdt,dpresdt,dentrdt,denerdd,dpresdd,dentrdd
     REAL(DP) :: denerdy,dpresdy,dentrdy
     REAL(DP) :: mu_p,mu_n,mu_hat,mu_e,mu_nu
@@ -96,6 +96,7 @@ CONTAINS
     ALLOCATE(nse_merge_u   (n_fin,t_fin,yp_fin))
     ALLOCATE(nse_merge_meffn(n_fin,t_fin,yp_fin))
     ALLOCATE(nse_merge_meffp(n_fin,t_fin,yp_fin))
+    ALLOCATE(nse_merge_dU(n_fin,t_fin,yp_fin))
     ALLOCATE(nse_merge_albar(n_fin,t_fin,yp_fin))
     ALLOCATE(nse_merge_zlbar(n_fin,t_fin,yp_fin))
     ALLOCATE(nse_merge_dsdn(n_fin,t_fin,yp_fin))
@@ -126,6 +127,7 @@ CONTAINS
     nse_merge_u    = zero
     nse_merge_meffn = zero
     nse_merge_meffp = zero
+    nse_merge_dU = zero
     nse_merge_dsdn = zero
     nse_merge_dsdt = zero
     nse_merge_dsdy = zero
@@ -151,11 +153,11 @@ CONTAINS
 !$OMP PRIVATE(nse_dmuhdd,nse_dmuhdt,nse_dmuhdy) &
 !$OMP PRIVATE(nse_xn,nse_xp,nse_xa,nse_xh,nse_xl) &
 !$OMP PRIVATE(nse_abar,nse_zbar,nse_albar,nse_zlbar) &
-!$OMP PRIVATE(nse_r,nse_u,nse_meffn,nse_meffp) &
+!$OMP PRIVATE(nse_r,nse_u,nse_meffn,nse_meffp,nse_dU) &
 !$OMP FIRSTPRIVATE(keytemp,keyerr,rfeps) &
 !$OMP PRIVATE(abar,zbar,albar,zlbar) &
 !$OMP PRIVATE(pres,entr,ener,mu_p,mu_n,mu_hat,mu_e,mu_nu) &
-!$OMP PRIVATE(rad,u,meffn,meffp) &
+!$OMP PRIVATE(rad,u,meffn,meffp,dU) &
 !$OMP PRIVATE(xa,xp,xn,xh,xl) &
 !$OMP PRIVATE(dsdn,dsdt,dsdy,dpdn,dpdt,dpdy,dedn,dedt,dedy) &
 !$OMP PRIVATE(gam,fac,cs2,dpdrhoe,dpderho) &
@@ -171,7 +173,8 @@ CONTAINS
 !$OMP SHARED(nse_merge_zbar,nse_merge_abar,nse_merge_zlbar,nse_merge_albar) &
 !$OMP SHARED(nse_merge_dsdn,nse_merge_dsdt,nse_merge_dsdy) &
 !$OMP SHARED(nse_merge_dpdn,nse_merge_dpdt,nse_merge_dpdy) &
-!$OMP SHARED(nse_merge_r,nse_merge_u,nse_merge_meffn,nse_merge_meffp)
+!$OMP SHARED(nse_merge_r,nse_merge_u,nse_merge_meffn,nse_merge_meffp) &
+!$OMP SHARED(nse_merge_dU)
     DO i_yp = yp_ini, yp_fin
       xe = Yp_min + dble(i_Yp-1)*Yp_step
       WRITE (6,"(A16,F7.5)") 'NSE loop. Yp = ', xe 
@@ -191,7 +194,7 @@ CONTAINS
             nse_dmuhdd,nse_dmuhdt,nse_dmuhdy,    &
             nse_xn,nse_xp,nse_xa,nse_xh,nse_xl,  &
             nse_abar,nse_zbar,nse_albar,nse_zlbar, &
-            nse_r,nse_u,nse_meffn,nse_meffp,keytemp,keyerr,rfeps)
+            nse_r,nse_u,nse_meffn,nse_meffp,nse_dU,keytemp,keyerr,rfeps)
 
             abar = nse_xn+nse_xp+nse_xa/four
             if (nse_xh  > 0.d0) &
@@ -251,6 +254,7 @@ CONTAINS
           u     = nse_u
           meffn = nse_meffn
           meffp = nse_meffp
+          dU    = nse_dU
 
           IF (xh == ZERO) THEN
             abar = 1.0d0
@@ -296,6 +300,7 @@ CONTAINS
 
             nse_merge_meffn(i_n,i_t,i_yp) = meffn
             nse_merge_meffp(i_n,i_t,i_yp) = meffp
+            nse_merge_dU(i_n,i_t,i_yp)    = dU
 
             nse_merge_dsdn(i_n,i_t,i_yp)  = dsdn
             nse_merge_dsdt(i_n,i_t,i_yp)  = dsdt
@@ -326,6 +331,7 @@ CONTAINS
 
           final_tab(i_n,i_t,i_yp,14:15) = (/rad,u/)
           final_tab(i_n,i_t,i_yp,25:26) = (/meffn,meffp/)
+          final_tab(i_n,i_t,i_yp,27)    = dU
 
 !         save final table nucleons, light and heavy nuclei properties
           final_tab(i_n,i_t,i_yp,16:24) = &

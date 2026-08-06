@@ -272,6 +272,7 @@ CONTAINS
     T_fin = idnint((Log10T_max-Log10T_min)*steps_per_decade_in_T) + 1
 
     ALLOCATE(final_tab(n_fin,t_fin,yp_fin,nvars))
+    final_tab = 0.0d0
 
     CALL PRINT_MAIN_INPUT
 

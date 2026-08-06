@@ -143,6 +143,8 @@ CONTAINS
     if (print_meff_n) ierr = ierr + h5_output_double(file_id,"meff_n",Meff_n_tab,dims3,rank)
     if (print_meff_p) ierr = ierr + h5_output_double(file_id,"meff_p",Meff_p_tab,dims3,rank)
 
+    ierr = ierr + h5_output_double(file_id,"dU",dU_tab,dims3,rank)
+
     if (print_xn) ierr = ierr + h5_output_double(file_id,"xn",xn_tab,dims3,rank)
     if (print_xp) ierr = ierr + h5_output_double(file_id,"xp",xp_tab,dims3,rank)
     if (print_xa) ierr = ierr + h5_output_double(file_id,"xa",xa_tab,dims3,rank)

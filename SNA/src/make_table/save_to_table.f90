@@ -16,9 +16,10 @@
 Module Save_to_Table_Mod
 
   USE Kind_Types_Mod,        ONLY : I4B, DP
-  USE Physical_Constants_Mod, ONLY : ZERO, ONE, TWO
+  USE Physical_Constants_Mod, ONLY : ZERO, ONE, TWO, Neut_Prot_Mass_Diff
   USE Allocatable_Tables_Mod
   USE Main_output_Mod
+  USE Skyrme_Bulk_Mod, ONLY : SKYRME_BULK_PROPERTIES
   USE, INTRINSIC :: IEEE_ARITHMETIC
 
   IMPLICIT NONE
@@ -31,6 +32,8 @@ CONTAINS
 
     INTEGER(I4B), INTENT(IN) :: i_n, i_t, i_y
     REAL(DP), INTENT(IN)     :: n, T, Yp
+    REAL(DP) :: b_nn, b_np, b_n, b_y, b_meffn, b_meffp, b_etan, b_etap
+    REAL(DP) :: b_taun, b_taup, b_vn, b_vp, b_mun, b_mup, b_p, b_f
 
     p_tab(i_n, i_t, i_y) = P
     e_tab(i_n, i_t, i_y) = E/n
@@ -54,6 +57,17 @@ CONTAINS
 
     meff_n_tab(i_n, i_t, i_y) = Meff_no
     meff_p_tab(i_n, i_t, i_y) = Meff_po
+
+!   single-particle potential difference dU = U_n - U_p of the (outside)
+!   nucleon gas, for beta-process mean-field corrections a la Hempel (2015).
+!   v_p from SKYRME_BULK_PROPERTIES contains -(m_n-m_p) since SRO measures
+!   energies relative to the neutron mass; remove it so dU is interaction only.
+    CALL SKYRME_BULK_PROPERTIES(log10(max(n_no,1.d-100)), &
+                                log10(max(n_po,1.d-100)), T, &
+                                b_nn, b_np, b_n, b_y, b_meffn, b_meffp, &
+                                b_etan, b_etap, b_taun, b_taup, &
+                                b_vn, b_vp, b_mun, b_mup, b_p, b_f)
+    dU_tab(i_n, i_t, i_y) = b_vn - b_vp - Neut_Prot_Mass_Diff
 
     xn_tab(i_n, i_t, i_y)   = x_no
     xp_tab(i_n, i_t, i_y)   = x_po

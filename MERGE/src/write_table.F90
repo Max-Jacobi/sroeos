@@ -110,6 +110,7 @@ module write_table
   ! 24 -> zlbar
   ! 25 -> meffn
   ! 26 -> meffp
+  ! 27 -> dU
 
     ierr = ierr + h5_output_double(file_id,"logpress" ,final_tab(:,:,:,1),dims3,rank)
     ierr = ierr + h5_output_double(file_id,"logenergy",final_tab(:,:,:,2),dims3,rank)
@@ -152,6 +153,8 @@ module write_table
 
     ierr = ierr + h5_output_double(file_id,"meffn",final_tab(:,:,:,25),dims3,rank)
     ierr = ierr + h5_output_double(file_id,"meffp",final_tab(:,:,:,26),dims3,rank)
+
+    ierr = ierr + h5_output_double(file_id,"dU",final_tab(:,:,:,27),dims3,rank)
 
     call h5fclose_f(file_id,error)
     call h5close_f(error)

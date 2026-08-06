@@ -65,6 +65,7 @@ CONTAINS
 
     allocate(meff_n_tab(n_log10n,n_log10T,n_Yp))
     allocate(meff_p_tab(n_log10n,n_log10T,n_Yp))
+    allocate(dU_tab(n_log10n,n_log10T,n_Yp))
 
     allocate(p_tab(n_log10n,n_log10T,n_Yp))
     allocate(e_tab(n_log10n,n_log10T,n_Yp))
@@ -115,6 +116,7 @@ CONTAINS
 
     meff_n_tab = zero
     meff_p_tab = zero
+    dU_tab = zero
 
     xn_tab   = zero
     xp_tab   = zero

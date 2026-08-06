@@ -32,6 +32,7 @@ MODULE Allocatable_Tables_Mod
   REAL(DP), DIMENSION(:,:,:), ALLOCATABLE :: abar_tab, zbar_tab
   REAL(DP), DIMENSION(:,:,:), ALLOCATABLE :: muh_tab,mup_tab,mun_tab
   REAL(DP), DIMENSION(:,:,:), ALLOCATABLE :: Meff_n_tab, Meff_p_tab
+  REAL(DP), DIMENSION(:,:,:), ALLOCATABLE :: dU_tab
   REAL(DP), DIMENSION(:,:,:), ALLOCATABLE :: u_tab, r_tab
   REAL(DP), DIMENSION(:), ALLOCATABLE :: log10n_tab, log10T_tab, yp_tab
 
