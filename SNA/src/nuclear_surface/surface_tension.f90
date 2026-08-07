@@ -110,6 +110,13 @@ CONTAINS
     !                 + mu_prot_in*dens_prot_in - press_in
 
 !   START INTEGRATING ONCE
+!   Default to the full scan range: Z0 is only assigned below when the
+!   profile is bracketed, and a trial (r, a) from the solver's line search
+!   can push the surface outside [-100, -1] entirely -- with local zero
+!   init Z0 = 0 then makes dz = 0 and the DO WHILE below never advances,
+!   spinning forever. (The x > 4 guard in MINIMIZE_SURFACE_TENSION only
+!   checks the entry point, not line-search trials.)
+    Z0 = -100.0D0
     DO i = -100, -1
       z = DBLE(i)
       dens_neut = Woods_Saxon(Z,r_neut,a_neut,dens_neut_in,dens_neut_out)
@@ -130,7 +137,14 @@ CONTAINS
     thermo_potential = ZERO
 
 !   PERFORM INTEGRAL
-    DO WHILE ( (dens_neut-dens_neut_out)/dens_neut_out > tol)
+!   The loop is bounded: it terminates on the density asymptote, which for
+!   a dilute outside phase (tiny dens_neut_out) can take arbitrarily many
+!   fixed-size steps, and for a degenerate trial profile never arrives.
+!   100*imax covers every legitimate profile with two orders of margin; a
+!   truncated integral only mis-scores a trial point the solver was going
+!   to reject anyway.
+    DO WHILE ( (dens_neut-dens_neut_out)/dens_neut_out > tol &
+               .AND. i <= 100*imax )
 
 !     OBTAIN POSITION
       z = z0 + dz*DBLE(i)
