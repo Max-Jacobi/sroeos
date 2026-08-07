@@ -19,6 +19,7 @@ MODULE Determine_Surface_Properties_Mod
   USE Kind_Types_Mod, ONLY : DP, I4B, LGCL
   USE Surface_Properties_Mod
   USE Fit_Critical_Temperature_Mod
+  USE Critical_Temperature_Mod, ONLY : Temp_c
   USE Nuclear_Surface_Tension_Mod
   USE Nuclear_Surface_Fit_Mod
   USE Surface_Observable_Mod
@@ -34,7 +35,7 @@ CONTAINS
     CHARACTER(*), PARAMETER :: OUTPUT_FORMAT   = "(1A10,1ES20.12,1A10)"
     CHARACTER(LEN=256) :: File_Name
 
-    INTEGER(I4B) :: data_points, io_stat
+    INTEGER(I4B) :: data_points, io_stat, j
     REAL(DP), DIMENSION(10000,1:3) :: TAB_SURF_TENS_VAL
     REAL(DP) :: S_S, A_S
 
@@ -58,6 +59,17 @@ CONTAINS
       CALL FIT_CRITICAL_TEMPERATURE
       WRITE (*,*) '        Fitted Critical temperature based on Skyrme parametrization.'
     ELSE
+!     The surface-tension sweep reads its per-proton-fraction temperature
+!     ceilings from T_table, which only FIT_CRITICAL_TEMPERATURE fills.
+!     With user-supplied T_crit + T_crit_coeffs, evaluate the supplied
+!     Eq. 22 fit instead -- otherwise fit_surface = .true. sweeps an
+!     all-zero T_table and tabulates no surface tension at all. A rung
+!     where the cubic goes non-positive stays zero, which
+!     NUCLEAR_SURFACE_TENSION reads as "no two-phase region at this
+!     proton fraction", same as after the internal fit.
+      DO j = 1, 100
+        T_table(j) = MAX(Temp_c(DBLE(j)/2.0D2), zero)
+      ENDDO
       WRITE (*,*) '        Used user input for critical temperature fitting.'
     ENDIF
 
