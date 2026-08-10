@@ -634,4 +634,107 @@ CONTAINS
 
   END SUBROUTINE JACOB_SOLVE_NON_UNIFORM
 
+
+! Pre-correct a bulk-coexistence seed (seed_filename path) into the cell
+! equilibrium's basin. The bulk seed satisfies PHASE equilibrium; the cell
+! residual at it equals the surface+Coulomb+translation terms B(1:3), and
+! B(2:3) displace the dilute gas by |B|/(T ln 10) in log10 density --
+! hundreds of decades at low T, farther than nwnleq's trust region will
+! travel. The equations are near-linear in the log densities there, so an
+! UNGLOBALIZED damped Newton with the analytic jacobian (FREE_ENERGY
+! objective 1/2) crosses the distance in a few capped steps; nwnleq then
+! verifies and the physical gates (A, Z, gamma) stay with
+! Find_Non_Uniform_Solution.
+  SUBROUTINE Correct_Seed ( n_in, T_in, Yp_in, x_seed )
+
+    IMPLICIT NONE
+
+    REAL(DP), INTENT(IN) :: n_in, T_in, Yp_in
+    REAL(DP), INTENT(INOUT) :: x_seed(3)
+    REAL(DP) :: x(3), x_try(3), eq(3), eq_try(3), jac(3,3), dx(3), det
+    REAL(DP) :: cof(3,3)
+    INTEGER(I4B) :: it, k, error
+    REAL(DP), PARAMETER :: DX_CAP = 3.0d2, EQ_TOL = 1.0d-8
+
+    n = n_in
+    T = T_in
+    Yp = Yp_in
+
+    x = x_seed
+    CALL SEED_EQ(x, 1, eq, jac, error)
+!   an invalid raw seed (gas density above the cell total, alpha blow-up)
+!   usually just has too much gas: shrink both gas densities until the free
+!   energy evaluates. A dex only moves mu by T ln10, so the shrink is
+!   1/T-scaled or the alpha term (exp(mu_alpha/T)) never comes down cold.
+    DO k = 1, 12
+      IF (error == 0) EXIT
+      x(1) = x(1) - MAX(ONE, 0.25d0/T_in)
+      x(2) = x(2) - MAX(ONE, 0.25d0/T_in)
+      CALL SEED_EQ(x, 1, eq, jac, error)
+    ENDDO
+    IF (error /= 0) RETURN
+
+    DO it = 1, 150
+      IF (MAXVAL(ABS(eq)) < EQ_TOL) EXIT
+      CALL SEED_EQ(x, 2, eq_try, jac, error)
+      IF (error /= 0) EXIT
+!     Cramer's rule for the 3x3 Newton step jac*dx = -eq
+      cof(1,1) =  jac(2,2)*jac(3,3) - jac(2,3)*jac(3,2)
+      cof(1,2) = -(jac(2,1)*jac(3,3) - jac(2,3)*jac(3,1))
+      cof(1,3) =  jac(2,1)*jac(3,2) - jac(2,2)*jac(3,1)
+      det = jac(1,1)*cof(1,1) + jac(1,2)*cof(1,2) + jac(1,3)*cof(1,3)
+      IF (ABS(det) < 1.0d-290) EXIT
+      cof(2,1) = -(jac(1,2)*jac(3,3) - jac(1,3)*jac(3,2))
+      cof(2,2) =  jac(1,1)*jac(3,3) - jac(1,3)*jac(3,1)
+      cof(2,3) = -(jac(1,1)*jac(3,2) - jac(1,2)*jac(3,1))
+      cof(3,1) =  jac(1,2)*jac(2,3) - jac(1,3)*jac(2,2)
+      cof(3,2) = -(jac(1,1)*jac(2,3) - jac(1,3)*jac(2,1))
+      cof(3,3) =  jac(1,1)*jac(2,2) - jac(1,2)*jac(2,1)
+      dx(1) = -(cof(1,1)*eq(1) + cof(2,1)*eq(2) + cof(3,1)*eq(3))/det
+      dx(2) = -(cof(1,2)*eq(1) + cof(2,2)*eq(2) + cof(3,2)*eq(3))/det
+      dx(3) = -(cof(1,3)*eq(1) + cof(2,3)*eq(2) + cof(3,3)*eq(3))/det
+      DO k = 1, 3
+        IF (ABS(dx(k)) > DX_CAP) dx(k) = SIGN(DX_CAP,dx(k))
+      ENDDO
+      x_try = x + dx
+!     u must stay in (0,1): log10 u < 0
+      IF (x_try(3) >= ZERO) x_try(3) = HALF*x(3)
+      DO k = 1, 8
+        CALL SEED_EQ(x_try, 1, eq_try, jac, error)
+        IF (error == 0) EXIT
+        x_try = HALF*(x_try + x)
+      ENDDO
+      IF (error /= 0) EXIT
+      x = x_try
+      eq = eq_try
+    ENDDO
+
+    x_seed = x
+
+  CONTAINS
+
+    SUBROUTINE SEED_EQ ( xx, obj, eq_out, jac_out, err )
+      REAL(DP), INTENT(IN) :: xx(3)
+      INTEGER(I4B), INTENT(IN) :: obj
+      REAL(DP), INTENT(OUT) :: eq_out(3), jac_out(3,3)
+      INTEGER(I4B), INTENT(OUT) :: err
+      REAL(DP) :: c_F_out, c_F_in, c_F_alpha, c_F_trans, c_F_surf_coul
+      REAL(DP) :: c_n_no, c_n_po, c_n_ni, c_n_pi, c_n_alpha, c_n_heavy
+      REAL(DP) :: c_A, c_Z, c_P
+      CALL FREE_ENERGY(xx(1), xx(2), xx(3), n_in, T_in, Yp_in,&
+          c_F_out, c_F_in, c_F_alpha, c_F_trans, c_F_surf_coul,&
+          c_n_no, c_n_po, c_n_ni, c_n_pi, c_n_alpha, c_n_heavy, &
+          c_A, c_Z, un_rad, un_F, c_P, un_S, un_E, &
+          un_DF_Dn, un_DF_Dy, un_DF_DT, un_DP_Dn, un_DP_Dy, un_DP_DT, &
+          un_DS_Dn, un_DS_Dy, un_DS_DT, un_DE_Dn, un_DE_Dy, un_DE_DT, &
+          un_mu_no, un_mu_po, un_Meff_no, un_Meff_po, &
+          un_Dmu_no_DT, un_Dmu_no_Dn, un_Dmu_no_Dy, &
+          un_Dmu_po_DT, un_Dmu_po_Dn, un_Dmu_po_Dy, &
+          un_dLog10_n_no_dn, un_dLog10_n_po_dn, un_dLog10_u_dn, &
+          un_dLog10_n_no_dT, un_dLog10_n_po_dT, un_dLog10_u_dT, &
+          eq_out, jac_out, obj, err)
+    END SUBROUTINE SEED_EQ
+
+  END SUBROUTINE Correct_Seed
+
 END MODULE Find_NoN_Uniform_Solution_Mod

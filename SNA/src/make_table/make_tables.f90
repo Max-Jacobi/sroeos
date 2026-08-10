@@ -28,6 +28,13 @@ MODULE Make_Tables_Mod
 
   CHARACTER(LEN=256)  :: filename_base, output_directory
 
+! optional per-cell seeds for the non-uniform solve
+! (log10 n_no, log10 n_po, log10 u), read from seed_filename
+  CHARACTER(LEN=256)  :: seed_filename
+  LOGICAL(LGCL) :: use_seeds
+  REAL(DP),      DIMENSION(:,:,:,:), ALLOCATABLE :: cell_seed
+  LOGICAL(LGCL), DIMENSION(:,:,:),   ALLOCATABLE :: cell_seed_mask
+
   include "../version.inc"
 
 END MODULE Make_Tables_Mod

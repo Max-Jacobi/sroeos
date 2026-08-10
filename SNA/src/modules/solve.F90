@@ -68,6 +68,8 @@ CONTAINS
     !  n, T, Ye, log10(n_no), log10(n_po), log10(u)
     outdir = output_directory
 
+    CALL READ_SEEDS
+
 #ifdef _OPENMP    
     nthreads = omp_get_max_threads()
 #else
@@ -86,6 +88,7 @@ CONTAINS
 
 !$OMP PARALLEL DO SCHEDULE (DYNAMIC,1) DEFAULT(NONE) &
 !$OMP FIRSTPRIVATE(Yp_ini,Yp_fin,Yp_step,Yp_min,outdir,write_solutions_to_file) &
+!$OMP FIRSTPRIVATE(use_seeds) SHARED(cell_seed,cell_seed_mask) &
 !$OMP FIRSTPRIVATE(n_ini,n_fin,steps_per_decade_in_n,Log10n_min) &
 !$OMP FIRSTPRIVATE(T_ini,T_fin,steps_per_decade_in_T,Log10T_min) &
 !$OMP PRIVATE(thread,i_T,i_n,i_Yp,dble_n,increment_n,count_u,count_nu) &
@@ -197,8 +200,11 @@ CONTAINS
           F_uniform = 1.d100
 !         check if temperature and density are low enough to skip
 !         looking for uniform solution, which may be time consuming at low T
-          IF (non_uniform_sol_found_for_T .AND. stop_check_uniform) &
-            check_uniform=.FALSE.
+!         with per-cell seeds the non-uniform sweep reaches cells this
+!         shortcut assumed dead; a seeded miss must keep its uniform
+!         fallback, so the skip is disabled for seeded runs
+          IF (non_uniform_sol_found_for_T .AND. stop_check_uniform &
+              .AND. .NOT. use_seeds) check_uniform=.FALSE.
           ! write (*,*) Yp, T, n, check_uniform
 !         if initial guess provided, use it
           IF (check_uniform .AND. UNIFORM_GUESS) THEN
@@ -260,6 +266,12 @@ CONTAINS
           IF (T_LARGER_THAN_Tcrit) check_non_uniform = .FALSE.
           IF (n_LARGER_THAN_nmax ) check_non_uniform = .FALSE.
           IF (n_SMALLER_THAN_nmin) check_non_uniform = .FALSE.
+!         a supplied per-cell seed overrides the attempt window: the window
+!         only expands on success, so a member whose scratch solve misses
+!         everywhere otherwise never attempts the cold dilute block
+          IF (use_seeds) THEN
+            IF (cell_seed_mask(i_n,i_T,i_Yp)) check_non_uniform = .TRUE.
+          ENDIF
           check_non_uniform_flag = check_non_uniform
 !         if a solution was found at a higher density use it as initial guess
           IF (check_non_uniform .AND. abs(x_nu_guess_n(i_n,i_t,3))>zero) THEN
@@ -285,6 +297,25 @@ CONTAINS
                                            NON_UNIFORM_SOL,F_non_uniform,&
                                            non_uniform_residue,retry,&
                                            non_uniform_solution)
+          ENDIF
+!         if a per-cell seed is supplied try it before the scratch grid
+!         (routes into the near-guess grid path of
+!          Find_Non_Uniform_Solution; falls through to scratch on failure)
+          IF (non_uniform_solution) check_non_uniform = .FALSE.
+          IF (check_non_uniform .AND. use_seeds) THEN
+            IF (cell_seed_mask(i_n,i_T,i_Yp)) THEN
+              count_nu = count_nu + 16
+              RETRY = .FALSE.
+              NON_UNIFORM_GUESS = .TRUE.
+              NON_UNIFORM_SOL_GUESS(1:3) = cell_seed(i_n,i_T,i_Yp,1:3)
+!             absorb the surface+Coulomb terms the bulk seed ignores into
+!             the gas log-densities (analytic in the Boltzmann limit)
+              CALL Correct_Seed(n,T,Yp,NON_UNIFORM_SOL_GUESS)
+              CALL Find_Non_Uniform_Solution(n,T,Yp,NON_UNIFORM_SOL_GUESS,&
+                                             NON_UNIFORM_SOL,F_non_uniform,&
+                                             non_uniform_residue,retry,&
+                                             non_uniform_solution)
+            ENDIF
           ENDIF
 !         if no guesses above then try to find solution from scratch
           IF (non_uniform_solution) check_non_uniform = .FALSE.
@@ -429,5 +460,51 @@ CONTAINS
     CLOSE(9)
 
   END SUBROUTINE SOLVE
+
+! Read per-cell seeds for the non-uniform solve (seed_filename in
+! TABLE_INPUT; written by scripts/sna_cell_seeds.py). Format:
+!   line 1:  n_pts T_pts Yp_pts       (must match the space grid)
+!   then:    i_n i_T i_Yp log10_n_no log10_n_po log10_u   (1-based)
+  SUBROUTINE READ_SEEDS
+
+    IMPLICIT NONE
+
+    INTEGER(I4B) :: sn, st, sy, i_n, i_T, i_Yp, ios, nread
+    REAL(DP) :: s1, s2, s3
+
+    use_seeds = .FALSE.
+    IF (TRIM(ADJUSTL(seed_filename)) == '') RETURN
+
+    OPEN(8,FILE=TRIM(ADJUSTL(seed_filename)),FORM='FORMATTED', &
+         STATUS='OLD',ACTION='READ')
+    READ(8,*) sn, st, sy
+    IF (sn /= n_fin .OR. st /= T_fin .OR. sy /= Yp_fin) THEN
+      WRITE (*,*) 'seed grid shape ', sn, st, sy, &
+                  ' does not match space grid ', n_fin, T_fin, Yp_fin
+      STOP 'ABORT: seed_filename grid mismatch'
+    ENDIF
+    ALLOCATE(cell_seed(n_ini:n_fin,T_ini:T_fin,Yp_ini:Yp_fin,1:3))
+    ALLOCATE(cell_seed_mask(n_ini:n_fin,T_ini:T_fin,Yp_ini:Yp_fin))
+    cell_seed = ZERO
+    cell_seed_mask = .FALSE.
+    nread = 0
+    DO
+      READ(8,*,IOSTAT=ios) i_n, i_T, i_Yp, s1, s2, s3
+      IF (ios /= 0) EXIT
+      IF (i_n < n_ini .OR. i_n > n_fin .OR. i_T < T_ini .OR. &
+          i_T > T_fin .OR. i_Yp < Yp_ini .OR. i_Yp > Yp_fin) &
+        STOP 'ABORT: seed cell index out of grid range'
+      cell_seed(i_n,i_T,i_Yp,1) = s1
+      cell_seed(i_n,i_T,i_Yp,2) = s2
+      cell_seed(i_n,i_T,i_Yp,3) = s3
+      cell_seed_mask(i_n,i_T,i_Yp) = .TRUE.
+      nread = nread + 1
+    ENDDO
+    CLOSE(8)
+    use_seeds = .TRUE.
+    WRITE (*,"(' Read ',I8,' non-uniform cell seeds from ',A)") &
+        nread, TRIM(ADJUSTL(seed_filename))
+
+  END SUBROUTINE READ_SEEDS
 
 END MODULE Solve_Mod

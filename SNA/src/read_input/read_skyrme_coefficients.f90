@@ -40,9 +40,9 @@ MODULE Read_Skyrme_Coefficients_Mod
     stiffening_exponent, stiffening_symmetry
     CHARACTER(LEN=256) :: command
 
-    NAMELIST /TABLE_INPUT/ make_hdf5_table, write_solutions_to_file, & 
+    NAMELIST /TABLE_INPUT/ make_hdf5_table, write_solutions_to_file, &
                            redefine_print_parameters, &
-                           filename_base, output_directory
+                           filename_base, output_directory, seed_filename
 
     NAMELIST /TABLE_OUTPUT/ print_p, print_s, print_e, &
                             print_muh, print_mun, print_mup, &
@@ -73,6 +73,8 @@ MODULE Read_Skyrme_Coefficients_Mod
     redefine_print_parameters = .FALSE.
     filename_base = 'EOS'
     output_directory = 'EOS'
+    seed_filename = ''
+    use_seeds = .FALSE.
 
     Use_default_constants = 0
     High_density_stiffening = .FALSE.
