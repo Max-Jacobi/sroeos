@@ -13,7 +13,10 @@
 !    You should have received a copy of the GNU General Public License
 !    along with SRO_EOS.  If not, see <http://www.gnu.org/licenses/>.
 !
-
+!    Input file names. The stock files under input/ are the defaults;
+!    READ_COMMANDLINE overrides all five when exactly five arguments are
+!    given (same convention as SNA's sro_eos and MERGE's merge_eos).
+!
 MODULE Input_Files_Mod
 
   USE Kind_Types_Mod, ONLY : DP, I4B, LGCL
@@ -22,10 +25,33 @@ MODULE Input_Files_Mod
 
   SAVE
 
-  character(len=256), parameter :: input_space = "input/space.in"
-  character(len=256), parameter :: input_partition = "input/partition.in"
-  character(len=256), parameter :: input_iso_properties = "input/isotopes.in"
-  character(len=256), parameter :: input_iso_list = "input/list.in"
-  character(len=256), parameter :: input_out_list = "input/output.in"
+  character(len=256) :: input_space = "input/space.in"
+  character(len=256) :: input_partition = "input/partition.in"
+  character(len=256) :: input_iso_properties = "input/isotopes.in"
+  character(len=256) :: input_iso_list = "input/list.in"
+  character(len=256) :: input_out_list = "input/output.in"
+
+CONTAINS
+
+  SUBROUTINE READ_COMMANDLINE
+    integer :: num_args
+
+    num_args = command_argument_count()
+
+    if (num_args == 0) return
+
+    if (num_args /= 5) then
+      write(*,*) 'Usage: main [<space.in> <partition.in> <isotopes.in>', &
+                 ' <list.in> <output.in>]'
+      write(*,*) 'With no arguments the files are read from input/.'
+      stop
+    end if
+
+    call get_command_argument(1, input_space)
+    call get_command_argument(2, input_partition)
+    call get_command_argument(3, input_iso_properties)
+    call get_command_argument(4, input_iso_list)
+    call get_command_argument(5, input_out_list)
+  END SUBROUTINE READ_COMMANDLINE
 
 END MODULE Input_Files_Mod

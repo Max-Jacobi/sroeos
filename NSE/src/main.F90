@@ -18,6 +18,7 @@ PROGRAM Main
   ! Use modules
   USE Kind_Types_Mod, ONLY : I4B, DP, LGCL
   USE Read_Input_Mod, ONLY : READ_OUTPUT_INPUT, READ_SPACE_INPUT
+  USE Input_Files_Mod, ONLY : READ_COMMANDLINE
   USE READ_NUCLEAR_DATA_TABLE_MOD
   USE Make_Tables_Mod
   USE Allocate_Mod
@@ -58,6 +59,8 @@ PROGRAM Main
   call sleep(0)
 
   WRITE (*,*)
+  CALL READ_COMMANDLINE
+
   WRITE (*,*) 'Step 1: Reading input.'
   CALL READ_OUTPUT_INPUT
 
